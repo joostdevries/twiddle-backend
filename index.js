@@ -4,6 +4,9 @@ var glob = require('glob');
 var rimraf = require('rimraf');
 var path = require('path');
 var rsvp = require('rsvp');
+var AWS = require('aws-sdk');
+var s3 = new AWS.S3();
+var npm = require('npm');
 
 function createBuildDir(buildDirPath) {
   return new rsvp.Promise(function(resolve, reject) {
@@ -77,10 +80,44 @@ function symlinkBuildDirBowerComponents(srcDirPath, buildDirPath) {
   });
 }
 
+function uploadToS3(srcDir, uploadPath) {
+  var jsFileStream = fs.createReadStream(path.join(srcDir, 'addons.js'));
+  var cssFileStream = fs.createReadStream(path.join(srcDir, 'addons.css'));
+
+  jsFileStream.on('error', function (err) {
+    if (err) { throw err; }
+  });
+
+  jsFileStream.on('open', function () {
+    s3.putObject({
+      Bucket: 'addons-test',
+      Key: uploadPath + '/addon.js',
+      Body: jsFileStream
+    }, function (err) {
+      if (err) { throw err; }
+    });
+  });
+
+  cssFileStream.on('error', function (err) {
+    if (err) { throw err; }
+  });
+
+  cssFileStream.on('open', function () {
+    s3.putObject({
+      Bucket: 'addons-test',
+      Key: uploadPath + '/addon.js',
+      Body: cssFileStream
+    }, function (err) {
+      if (err) { throw err; }
+    });
+  });
+}
+
 function giftwrap(addon, addonVersion, emberVersion) {
-  var buildDirPath = path.resolve('./build-' + addon + '-' + addonVersion.replace(/\./gi,'-') + '-ember-' + emberVersion.replace(/\./gi,'-'));
-  var buildOutPath = path.resolve('./' + addon + '-' + addonVersion.replace(/\./gi,'-') + '-ember-' + emberVersion.replace(/\./gi,'-'));
-  var srcDirPath = path.resolve('./addon-builder-' + emberVersion.replace(/\./gi,'-'));
+  var buildDirPath = path.resolve('/tmp/build-' + addon + '-' + addonVersion.replace(/\./gi,'-') + '-ember-' + emberVersion.replace(/\./gi,'-'));
+  var buildOutPath = path.resolve('/tmp/' + addon + '-' + addonVersion.replace(/\./gi,'-') + '-ember-' + emberVersion.replace(/\./gi,'-'));
+  var srcDirPath = path.resolve('./ember-blueprints/' + emberVersion);
+  var s3Path = 'ember-' + emberVersion + '/' + addon + '/' + addonVersion;
 
   console.log(buildDirPath);
   console.log(buildOutPath);
@@ -92,10 +129,10 @@ function giftwrap(addon, addonVersion, emberVersion) {
     .then(symlinkBuildDirNodeModules.bind(this, srcDirPath))
     .then(symlinkBuildDirBowerComponents.bind(this, srcDirPath))
     .then(function(res, err) {
-      ember(buildDirPath, ['install', addon + '@' + addonVersion]).then(function(res, err) {
-        // Hack :-)
-        delete require.cache[path.join(buildDirPath, 'package.json')];
-        ember(buildDirPath, ['giftwrap', '--output-path=' + buildOutPath]);
+       npm.load(function() {
+        npm.instal(addon + '@' + addonVersion, function() {
+          ember(buildDirPath, ['giftwrap', '--output-path=' + buildOutPath]).then(uploadToS3.bind(this, buildOutPath, s3Path));
+        });
       });
     });
 }
@@ -112,4 +149,6 @@ function ember(pkgPath, command) {
   });
 }
 
-giftwrap('ember-tooltips','latest','1.13.1');
+// exports.handler = function() {
+  giftwrap('ember-breadcrumbs','0.1.7','1.13.1');
+// };
