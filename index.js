@@ -129,11 +129,15 @@ function giftwrap(addon, addonVersion, emberVersion) {
     .then(symlinkBuildDirNodeModules.bind(this, srcDirPath))
     .then(symlinkBuildDirBowerComponents.bind(this, srcDirPath))
     .then(function(res, err) {
+      process.chdir(buildDirPath);
        npm.load(function() {
-        console.log('NPM Loaded', arguments);
+        console.log('NPM Loaded');
         npm.instal(addon + '@' + addonVersion, function() {
-          console.log('NPM Install', arguments);
-          ember(buildDirPath, ['giftwrap', '--output-path=' + buildOutPath]).then(uploadToS3.bind(this, buildOutPath, s3Path));
+          console.log('NPM Install complete');
+          ember(buildDirPath, ['giftwrap', '--output-path=' + buildOutPath]).then(function() {
+            console.log('Ember command complete', arguments);
+            uploadToS3(buildOutPath, s3Path);
+          });
         });
       });
     });
