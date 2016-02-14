@@ -130,7 +130,9 @@ function giftwrap(addon, addonVersion, emberVersion) {
     .then(symlinkBuildDirBowerComponents.bind(this, srcDirPath))
     .then(function(res, err) {
        npm.load(function() {
+        console.log('NPM Loaded', arguments);
         npm.instal(addon + '@' + addonVersion, function() {
+          console.log('NPM Install', arguments);
           ember(buildDirPath, ['giftwrap', '--output-path=' + buildOutPath]).then(uploadToS3.bind(this, buildOutPath, s3Path));
         });
       });
@@ -149,6 +151,6 @@ function ember(pkgPath, command) {
   });
 }
 
-// exports.handler = function() {
+exports.handler = function() {
   giftwrap('ember-breadcrumbs','0.1.7','1.13.1');
-// };
+};
