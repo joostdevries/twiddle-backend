@@ -14,6 +14,7 @@ function createBuildDir(buildDirPath) {
     fs.mkdirSync(buildDirPath);
     fs.mkdirSync(buildDirPath + '/node_modules');
     fs.mkdirSync(buildDirPath + '/bower_components');
+    fs.mkdirSync(buildDirPath + '/tmp');
 
     console.log('Created build dir');
     resolve(buildDirPath);
@@ -135,7 +136,7 @@ function giftwrap(addon, addonVersion, emberVersion) {
         npm.instal(addon + '@' + addonVersion, function() {
           console.log('NPM Install complete');
           ember(buildDirPath, ['giftwrap', '--output-path=' + buildOutPath]).then(function() {
-            console.log('Ember command complete', arguments);
+            console.log('Ember command complete', buildOutPath);
             uploadToS3(buildOutPath, s3Path);
           });
         });
@@ -150,11 +151,23 @@ function ember(pkgPath, command) {
     name: 'test',
     ui: false,
     inputStream: process.stdin,
-    outputStream: process.stdout,
+    outputStream: echoStream,
+    errorLog: echoStream,
     cliArgs: command
   });
 }
 
+var stream = require('stream');
+var echoStream = new stream.Writable();
+echoStream._write = function (chunk, encoding, done) {
+  console.log(chunk.toString().replace('\n',''));
+  done();
+};
+
 exports.handler = function() {
+  echoStream.write('Test stdout\n');
+  echoStream.write('Test stderr\n');
   giftwrap('ember-breadcrumbs','0.1.7','1.13.1');
 };
+
+// exports.handler();
