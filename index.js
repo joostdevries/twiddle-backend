@@ -1,4 +1,10 @@
 /*jshint node:true */
+/*
+  Addon builder
+  todo:
+    - upload errors to s3 as json files
+ */
+
 var fs = require('fs-extra');
 var glob = require('glob');
 var rimraf = require('rimraf');
@@ -10,9 +16,17 @@ var npm = require('npm');
 var stream = require('stream');
 
 // process.stdout doesnt work on lambda
-var echoStream = new stream.Writable();
-echoStream._write = function (chunk, encoding, done) {
+var emberLogStream = new stream.Writable();
+emberLogStream._write = function (chunk, encoding, done) {
   console.log(chunk.toString().replace('\n',''));
+  done();
+};
+
+var emberErrorStream = new stream.Writable();
+var emberErrors = '';
+emberErrorStream._write = function (chunk, encoding, done) {
+  console.log(chunk.toString().replace('\n',''));
+  emberErrors += chunk.toString().replace('\n','');
   done();
 };
 
@@ -134,6 +148,18 @@ function uploadToS3(srcDir, uploadPath) {
   return rsvp.all([jsUploadPromise, cssUploadPromise]);
 }
 
+function uploadErrorToS3(error, uploadPath) {
+  s3.putObject({
+    Bucket: 'addons-test',
+    ACL: 'public-read',
+    Key: uploadPath + '/addon.js',
+    ContentType: 'application/javascript',
+    Body: JSON.stringify(error)
+  }, function (err) {
+    console.log('Uploaded error to s3');
+  });
+}
+
 function npmInstall(buildDirPath, addon, addonVersion) {
   return new rsvp.Promise(function(resolve, reject) {
     process.chdir(buildDirPath);
@@ -159,19 +185,16 @@ function ember(pkgPath, command) {
     name: 'test',
     ui: false,
     inputStream: process.stdin,
-    outputStream: echoStream,
-    errorLog: echoStream,
+    outputStream: emberLogStream,
+    errorLog: emberErrorStream,
     cliArgs: command
   });
 }
 
-exports.handler = function() {
-  echoStream.write('Test stdout\n');
-  echoStream.write('Test stderr\n');
-
-  var addon = 'ember-breadcrumbs';
-  var addonVersion = '0.1.7';
-  var emberVersion = '1.13.1';
+exports.handler = function(event) {
+  var addon = event.addon;
+  var addonVersion = event.addon_version;
+  var emberVersion = event.ember_version;
 
   var buildDirPath = path.resolve('/tmp/build-' + addon + '-' + addonVersion.replace(/\./gi,'-') + '-ember-' + emberVersion.replace(/\./gi,'-'));
   var buildOutPath = path.resolve('/tmp/' + addon + '-' + addonVersion.replace(/\./gi,'-') + '-ember-' + emberVersion.replace(/\./gi,'-'));
@@ -192,10 +215,24 @@ exports.handler = function() {
     .then(uploadToS3.bind(this, buildOutPath, s3Path))
     .then(function(res) {
       console.log('Operations finished');
-      context.success();
+      context.done();
     },function(err) {
-      console.log('Error', err);
+      console.log('Error:', err);
+      console.log('Ember errors:', emberErrors);
+      var errorObject = {
+        status: 'build_error',
+        details: {
+          error: err,
+          ember_errors: emberErrors
+        }
+      };
+
+      uploadErrorToS3(errorObject, s3Path);
     });
 };
 
-// exports.handler();
+// exports.handler({
+//   addon: 'ember-breadcrumbs',
+//   addon_version: '0.1.7',
+//   ember_version: '1.13.2'
+// });
