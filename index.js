@@ -1,8 +1,6 @@
 /*jshint node:true */
 /*
   Addon builder
-  todo:
-    - upload errors to s3 as json files
  */
 
 var fs = require('fs-extra');

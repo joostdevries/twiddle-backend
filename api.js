@@ -2,7 +2,7 @@
 /*
   API GateWay lambda function
   todo:
-    - create temporary json object before building
+    - maybe also use promises
  */
 
 var AWS = require('aws-sdk');
