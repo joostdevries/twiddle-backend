@@ -131,8 +131,8 @@ function uploadToS3(srcDir, uploadPath) {
       Body: JSON.stringify({
         status: 'build_success',
         status_date: new Date().toISOString(),
-        addon_js: uploadPath + '/addon.js',
-        addon_css: uploadPath + '/addon.css',
+        addon_js: '//s3.amazonaws.com/addons-test/' + uploadPath + '/addon.js',
+        addon_css: '//s3.amazonaws.com/addons-test/' + uploadPath + '/addon.css',
         errors: null,
         ember_errors: null
       })
