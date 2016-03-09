@@ -25,8 +25,5 @@
     "ember-cli-htmlbars": "0.7.9",
     "ember-cli-htmlbars-inline-precompile": "^0.1.1",
     "ember-cli-uglify": "^1.0.1"
-  },
-  "dependencies": {
-    "ember-tooltips": "^0.5.8"
   }
 }
