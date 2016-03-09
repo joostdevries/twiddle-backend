@@ -88,6 +88,24 @@ function symlinkBuildDirNodeModules(srcDirPath, buildDirPath) {
   });
 }
 
+function replaceAppName(buildOutPath) {
+  console.log('Replacing app name...');
+  return new rsvp.Promise(function(resolve, reject) {
+    var filePath = path.join(buildOutPath, 'addons.js');
+    fs.readFile(filePath, 'utf8', function (err,data) {
+      if (err) {
+        return reject(err);
+      }
+      var result = data.replace(/giftwrap/g, 'demo-app');
+
+      fs.writeFile(filePath, result, 'utf8', function (err) {
+         if (err) return reject(err);
+         return resolve(buildOutPath);
+      });
+    });
+  });
+}
+
 function symlinkBuildDirBowerComponents(srcDirPath, buildDirPath) {
   return new rsvp.Promise(function(resolve, reject) {
     glob(srcDirPath + '/bower_components/*', function(err, files) {
@@ -103,6 +121,27 @@ function symlinkBuildDirBowerComponents(srcDirPath, buildDirPath) {
 }
 
 function uploadToS3(srcDir, uploadPath) {
+  console.log('Uploading to S3...');
+  var jsonUploadPromise = new rsvp.Promise(function(resolve, reject){
+    s3.putObject({
+      Bucket: 'addons-test',
+      ACL: 'public-read',
+      Key: uploadPath + '/addon.json',
+      ContentType: 'application/json',
+      Body: JSON.stringify({
+        status: 'build_success',
+        status_date: new Date().toISOString(),
+        addon_js: uploadPath + '/addon.js',
+        addon_css: uploadPath + '/addon.css',
+        errors: null,
+        ember_errors: null
+      })
+    }, function (err) {
+      if (err) { return reject(err); }
+      return resolve();
+    });
+  });
+
   var jsUploadPromise = new rsvp.Promise(function(resolve, reject){
     var jsFileStream = fs.createReadStream(path.join(srcDir, 'addons.js'));
     jsFileStream.on('error', function (err) {
@@ -143,15 +182,15 @@ function uploadToS3(srcDir, uploadPath) {
     });
   });
 
-  return rsvp.all([jsUploadPromise, cssUploadPromise]);
+  return rsvp.all([jsonUploadPromise, jsUploadPromise, cssUploadPromise]);
 }
 
 function uploadErrorToS3(error, uploadPath) {
   s3.putObject({
     Bucket: 'addons-test',
     ACL: 'public-read',
-    Key: uploadPath + '/addon.js',
-    ContentType: 'application/javascript',
+    Key: uploadPath + '/addon.json',
+    ContentType: 'application/json',
     Body: JSON.stringify(error)
   }, function (err) {
     console.log('Uploaded error to s3');
@@ -159,6 +198,7 @@ function uploadErrorToS3(error, uploadPath) {
 }
 
 function npmInstall(buildDirPath, addon, addonVersion) {
+  console.log('Running NPM install...');
   return new rsvp.Promise(function(resolve, reject) {
     process.chdir(buildDirPath);
     npm.load(function() {
@@ -173,6 +213,7 @@ function npmInstall(buildDirPath, addon, addonVersion) {
 }
 
 function giftwrap(buildDirPath, buildOutPath) {
+  console.log('Running giftwrap...');
   return ember(buildDirPath, ['giftwrap', '--output-path=' + buildOutPath]);
 }
 
@@ -210,6 +251,7 @@ exports.handler = function(event) {
     .then(symlinkBuildDirBowerComponents.bind(this, srcDirPath))
     .then(npmInstall.bind(this, buildDirPath, addon, addonVersion))
     .then(giftwrap.bind(this, buildDirPath, buildOutPath))
+    .then(replaceAppName.bind(this, buildOutPath))
     .then(uploadToS3.bind(this, buildOutPath, s3Path))
     .then(function(res) {
       console.log('Operations finished');
@@ -219,10 +261,11 @@ exports.handler = function(event) {
       console.log('Ember errors:', emberErrors);
       var errorObject = {
         status: 'build_error',
-        details: {
-          error: err,
-          ember_errors: emberErrors
-        }
+        status_date: new Date().toISOString(),
+        addon_js: null,
+        addon_css: null,
+        errors: err,
+        ember_errors: emberErrors
       };
 
       uploadErrorToS3(errorObject, s3Path);

@@ -28,13 +28,13 @@ exports.handler = function(event, context) {
         buildAddon(emberVersion, addon, addonVersion, function(err, data) {
           console.log('Invocation complete');
           console.log(err, data);
-          var addonS3Url = "https://s3.amazonaws.com/addons-test/ember-"+emberVersion+"/"+addon+"/"+addonVersion+"/addon.js";
+          var addonS3Url = "https://s3.amazonaws.com/addons-test/ember-"+emberVersion+"/"+addon+"/"+addonVersion+"/addon.json";
           context.done(null, {"location":addonS3Url});
         });
       }
       else {
         console.log('Serving cached ', addon, addonVersion);
-        var addonS3Url = "https://s3.amazonaws.com/addons-test/ember-"+emberVersion+"/"+addon+"/"+addonVersion+"/addon.js";
+        var addonS3Url = "https://s3.amazonaws.com/addons-test/ember-"+emberVersion+"/"+addon+"/"+addonVersion+"/addon.json";
         context.done(null, {"location":addonS3Url});
       }
     });
@@ -61,7 +61,7 @@ function getPackageInfo(name, versionSpec, callback) {
 function checkIfAddonExists(emberVersion, addon, addonVersion, cb) {
   var params = {
     Bucket: 'addons-test',
-    Key: 'ember-'+emberVersion+'/'+addon+'/'+addonVersion+'/addon.js'
+    Key: 'ember-'+emberVersion+'/'+addon+'/'+addonVersion+'/addon.json'
   };
 
   s3.headObject(params, cb);
@@ -72,9 +72,16 @@ function buildAddon(emberVersion, addon, addonVersion, cb) {
   s3.putObject({
     Bucket: 'addons-test',
     ACL: 'public-read',
-    Key: 'ember-'+emberVersion+'/'+addon+'/'+addonVersion+'/addon.js',
-    ContentType: 'application/javascript',
-    Body: JSON.stringify({status: "building", details: "try again in 30s"})
+    Key: 'ember-'+emberVersion+'/'+addon+'/'+addonVersion+'/addon.json',
+    ContentType: 'application/json',
+    Body: JSON.stringify({
+      status: 'building',
+      status_date: new Date().toISOString(),
+      addon_js: null,
+      addon_css: null,
+      errors: null,
+      ember_errors: null,
+    })
   }, function (err) {
     var params = {
       FunctionName: 'build-addon-test', /* required */
