@@ -61,7 +61,7 @@ module.exports = function(defaults) {
   }));
 
 
-  var addonTrees = mergeTrees(app.addonTreesFor('addon'));
+  var addonTrees = mergeTrees(app.addonTreesFor('addon').concat(app.addonTreesFor('vendor')));
 
   var addonES6 = new Funnel(addonTrees, {
     srcDir: 'modules',
@@ -88,14 +88,14 @@ module.exports = function(defaults) {
   });
 
   return mergeTrees([
-    app.concatFiles(addonTrees, {
+    app.concatFiles(mergeTrees(app.addonTreesFor('styles').concat(addonTrees)), {
       inputFiles: ['**/*.css'],
       outputFile: '/addons.css',
       allowNone: true,
       annotation: 'Concat: Addon CSS'
     }),
 
-    app.concatFiles(mergeTrees([transpiledAppTree, reexportsAndTranspiledAddonTree]), {
+    app.concatFiles(mergeTrees([transpiledAppTree, reexportsAndTranspiledAddonTree].concat(app.addonTreesFor('vendor'))), {
       inputFiles: ['**/*.js'],
       outputFile: '/addons.js',
       allowNone: true,
