@@ -87,8 +87,31 @@ module.exports = function(defaults) {
     annotation: 'TreeMerger: (re-exports)'
   });
 
-  var addonVendorJSTree = app.concatFiles(mergeTrees(app.addonTreesFor('vendor')), {
+  var bowerTree = new Funnel(app.trees.bower, {
+    srcDir: '/',
+    destDir: app.bowerDirectory + '/',
+    exclude: [
+      '**/ember/**'
+    ],
+    annotation: 'Funnel (bower)'
+  });
+
+  var vendorTree = new Funnel(mergeTrees(app.addonTreesFor('vendor')), {
+    srcDir: '/',
+    destDir: 'vendor/',
+    annotation: 'Funnel (vendor)',
+    exclude: [
+      '**/jquery/**'
+    ]
+  });
+
+
+  var addonVendorJSTree = app.concatFiles(mergeTrees([bowerTree, vendorTree]), {
     inputFiles: ['**/*.js'],
+    allowNone: true,
+    header: ";(function() { ",
+    footer: "}());",
+    outputFile: '/addons-vendor.js',
   });
 
   return mergeTrees([
@@ -99,7 +122,7 @@ module.exports = function(defaults) {
       annotation: 'Concat: Addon CSS'
     }),
 
-    app.concatFiles(mergeTrees([transpiledAppTree, reexportsAndTranspiledAddonTree, addonVendorJSTree]), {
+    app.concatFiles(mergeTrees([addonVendorJSTree, transpiledAppTree, reexportsAndTranspiledAddonTree]), {
       inputFiles: ['**/*.js'],
       outputFile: '/addons.js',
       allowNone: true,
