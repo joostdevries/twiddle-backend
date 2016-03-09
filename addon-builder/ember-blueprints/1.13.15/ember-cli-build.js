@@ -90,14 +90,14 @@ module.exports = function(defaults) {
   return mergeTrees([
     app.concatFiles(addonTrees, {
       inputFiles: ['**/*.css'],
-      outputFile: '/addon.css',
+      outputFile: '/addons.css',
       allowNone: true,
       annotation: 'Concat: Addon CSS'
     }),
 
     app.concatFiles(mergeTrees([transpiledAppTree, reexportsAndTranspiledAddonTree]), {
       inputFiles: ['**/*.js'],
-      outputFile: '/addon.js',
+      outputFile: '/addons.js',
       allowNone: true,
       annotation: 'Concat: Addon JS'
     })
