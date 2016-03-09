@@ -87,6 +87,10 @@ module.exports = function(defaults) {
     annotation: 'TreeMerger: (re-exports)'
   });
 
+  var addonVendorJSTree = app.concatFiles(mergeTrees(app.addonTreesFor('vendor')), {
+    inputFiles: ['**/*.js'],
+  });
+
   return mergeTrees([
     app.concatFiles(mergeTrees(app.addonTreesFor('styles').concat(addonTrees)), {
       inputFiles: ['**/*.css'],
@@ -95,7 +99,7 @@ module.exports = function(defaults) {
       annotation: 'Concat: Addon CSS'
     }),
 
-    app.concatFiles(mergeTrees([transpiledAppTree, reexportsAndTranspiledAddonTree].concat(app.addonTreesFor('vendor'))), {
+    app.concatFiles(mergeTrees([transpiledAppTree, reexportsAndTranspiledAddonTree, addonVendorJSTree]), {
       inputFiles: ['**/*.js'],
       outputFile: '/addons.js',
       allowNone: true,
