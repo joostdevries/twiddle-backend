@@ -214,7 +214,7 @@ function npmInstall(buildDirPath, addon, addonVersion) {
 
 function giftwrap(buildDirPath, buildOutPath) {
   console.log('Running giftwrap...');
-  return ember(buildDirPath, ['giftwrap', '--output-path=' + buildOutPath]);
+  return ember(buildDirPath, ['build', '--output-path=' + buildOutPath]);
 }
 
 function ember(pkgPath, command) {
