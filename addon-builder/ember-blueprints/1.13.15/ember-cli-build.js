@@ -38,11 +38,17 @@ module.exports = function() {
   var app = new StubApp({
     name: 'demo-app',
     tests: false,
+    sourcemaps: {
+      enabled: false
+    },
+     minifyCSS: {
+       enabled: false,
+     },
+     minifyJS: {
+      enabled: false
+     },
     trees: {
       app: new EmptyTree(),
-      // I'm creating these empty files because badly behaved
-      // preprocessors explode if they aren't present, even though we
-      // aren't going to use them.
       styles: new EmptyTree(['app.css', 'app.scss']),
       templates: new EmptyTree(),
       public: new EmptyTree()
