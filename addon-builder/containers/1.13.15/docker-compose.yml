@@ -1,0 +1,18 @@
+# Runs all containers for the closealert stack in parralel
+# and also starts a postgres + redis instance.
+
+# CloseAlert webapp container
+ember:
+  build: .
+  volumes:
+   # - ./node_modules:/addon-builder/node_modules
+   # - ./bower_components:/addon-builder/bower_components
+   - ./dist:/addon-builder/dist
+  environment:
+    ADDON_NAME: ember-cli-selectize
+    ADDON_VERSION: 0.5.2
+  working_dir: /addon-builder
+  entrypoint:
+    - /addon-builder/build-addon.sh
+  command:
+    - test
