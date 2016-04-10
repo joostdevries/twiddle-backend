@@ -20,6 +20,7 @@ COPY tests /addon-builder/tests
 COPY vendor /addon-builder/vendor
 COPY ember-cli-build.js /addon-builder/ember-cli-build.js
 COPY build-addon.sh /addon-builder/build-addon.sh
+COPY upload.js /addon-builder/upload.js
 
 ENTRYPOINT ['/addon-builder/build-addon.sh']
 EXPOSE 4200
