@@ -4,15 +4,20 @@
 # CloseAlert webapp container
 ember:
   build: .
-  volumes:
-   # - ./node_modules:/addon-builder/node_modules
-   # - ./bower_components:/addon-builder/bower_components
-   - ./dist:/addon-builder/dist
   environment:
-    ADDON_NAME: ember-cli-selectize
-    ADDON_VERSION: 0.5.2
+    # ADDON_NAME: ember-cli-selectize
+    # ADDON_VERSION: 0.5.2
+    ADDON_NAME: ember-cli-zero-clipboard
+    ADDON_VERSION: 1.1.1
+    AWS_ACCESS_KEY_ID: 
+    AWS_SECRET_ACCESS_KEY: 
+    AWS_DEFAULT_REGION: us-east-1
   working_dir: /addon-builder
   entrypoint:
     - /addon-builder/build-addon.sh
-  command:
-    - test
+
+
+- ADDON_NAME
+- ADDON_VERSION
+- AWS_ACCESS_KEY_ID
+- AWS_SECRET_ACCESS_KEY

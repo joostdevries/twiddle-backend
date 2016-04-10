@@ -1,37 +1,74 @@
 var AWS = require('aws-sdk');
 var s3 = require('s3');
+var fs = require('fs');
 
 var awsAccessKeyId = process.env.AWS_ACCESS_KEY_ID;
 var awsSecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+var awsSessionToken = process.env.AWS_SESSION_TOKEN;
 var awsRegion = process.env.AWS_DEFAULT_REGION;
 
+var buildStatus = process.argv[2];
 var addonName = process.env.ADDON_NAME;
 var addonVersion = process.env.ADDON_VERSION;
+var uploadPath = 'ember-1.13.15/' + addonName + '/' + addonVersion;
+var bucketName = 'addons-test';
 
-var client = s3.createClient({
-  s3Options: {
-    accessKeyId: awsAccessKeyId,
-    secretAccessKey: awsSecretAccessKey,
-    region: awsRegion,
-  },
-});
+console.log('Generating json...');
+generateAddonJson();
+console.log('Uploading assets...');
+uploadAssets();
 
-var params = {
-  localDir: "dist",
 
-  s3Params: {
-    Bucket: "addons-test",
-    Prefix: "ember-1.13.15/" + addonName + "/" + addonVersion,
-  },
-};
+// Generate addon.json with details on build
+function generateAddonJson() {
+  var addonJson = {
+    status_date: new Date().toISOString(),
+  };
 
-var uploader = client.uploadDir(params);
-uploader.on('error', function(err) {
-  console.error("unable to sync:", err.stack);
-});
-uploader.on('progress', function() {
-  console.log("progress", uploader.progressAmount, uploader.progressTotal);
-});
-uploader.on('end', function() {
-  console.log("done uploading");
-});
+  if (buildStatus==='0') {
+    addonJson.status = 'build_success';
+    addonJson.addon_js = '//s3.amazonaws.com/' + bucketName + '/' + uploadPath + '/addon.js';
+    addonJson.addon_css = '//s3.amazonaws.com/' + bucketName + '/' + uploadPath + '/addon.css';
+    addonJson.error_log = null;
+  }
+  else {
+    var buildLog = '';
+    addonJson.status = 'build_error';
+    addonJson.addon_js = null;
+    addonJson.addon_css = null;
+    addonJson.error_log = buildLog;
+  }
+
+  fs.writeFileSync('dist/addon.json', JSON.stringify(addonJson));
+}
+
+function uploadAssets() {
+  var client = s3.createClient({
+    s3Options: {
+      accessKeyId: awsAccessKeyId,
+      secretAccessKey: awsSecretAccessKey,
+      sessionToken: awsSessionToken,
+      region: awsRegion,
+    },
+  });
+
+  var params = {
+    localDir: 'dist',
+
+    s3Params: {
+      Bucket: bucketName,
+      Prefix: uploadPath,
+    },
+  };
+
+  var uploader = client.uploadDir(params);
+  uploader.on('error', function(err) {
+    console.error("unable to sync:", err.stack);
+  });
+  uploader.on('progress', function() {
+    console.log("progress", uploader.progressAmount, uploader.progressTotal);
+  });
+  uploader.on('end', function() {
+    console.log("done uploading");
+  });
+}
