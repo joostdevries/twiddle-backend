@@ -8,7 +8,8 @@
 var AWS = require('aws-sdk');
 var http = require('http');
 var s3 = new AWS.S3();
-var lambda = new AWS.Lambda();
+var sts = new AWS.STS();
+var ecs = new AWS.ECS();
 
 exports.handler = function(event, context) {
   var addon = event.addon;
@@ -83,16 +84,55 @@ function buildAddon(emberVersion, addon, addonVersion, cb) {
       ember_errors: null,
     })
   }, function (err) {
-    var params = {
-      FunctionName: 'build-addon-test', /* required */
-      InvocationType: 'Event',
-      Payload: JSON.stringify({
-        addon: addon,
-        addon_version: addonVersion,
-        ember_version: emberVersion
-      }),
+    var stsParams = {
+      RoleArn: 'addon-builder-role', /* required */
+      RoleSessionName: 'build-addon', /* required */
+      DurationSeconds: 300,
+      Policy: JSON.stringify(buildAddonPolicy)
     };
-    lambda.invoke(params, cb);
+    sts.assumeRole(stsParams, function (err, data) {
+      if (err) console.log(err, err.stack); // an error occurred
+      else     console.log(data);           // successful response
+
+      var params = {
+        taskDefinition: 'build-addon-1-13-15', /* required */
+        cluster: 'twiddle-addon-builder',
+        count: 1,
+        overrides: {
+          containerOverrides: [
+            {
+              environment: [
+                {
+                  name: 'AWS_ACCESS_KEY_ID',
+                  value: data.Credentials.AccessKeyId
+                },
+                {
+                  name: 'AWS_SECRET_ACCESS_KEY',
+                  value: data.Credentials.SecretAccessKey
+                },
+                {
+                  name: 'AWS_SESSION_TOKEN',
+                  value: data.Credentials.SessionToken
+                },
+                {
+                  name: 'ADDON_NAME',
+                  value: addon
+                },
+                {
+                  name: 'ADDON_VERSION',
+                  value: addonVersion
+                },
+              ]
+            }
+          ]
+        },
+        startedBy: 'api_call'
+      };
+      ecs.runTask(params, function(err, data) {
+        if (err) console.log(err, err.stack); // an error occurred
+        else     console.log(data);           // successful response
+      });
+    });
   });
 }
 
