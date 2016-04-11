@@ -1,6 +1,8 @@
+var util = require('util');
 var AWS = require('aws-sdk');
 var s3 = require('s3');
 var fs = require('fs');
+var iam = new AWS.IAM();
 
 var awsAccessKeyId = process.env.AWS_ACCESS_KEY_ID;
 var awsSecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
@@ -11,7 +13,7 @@ var buildStatus = process.argv[2];
 var addonName = process.env.ADDON_NAME;
 var addonVersion = process.env.ADDON_VERSION;
 var uploadPath = 'ember-1.13.15/' + addonName + '/' + addonVersion;
-var bucketName = 'addons-test';
+var bucketName = 'ember-twiddle-addons-beta';
 
 console.log('Generating json...');
 generateAddonJson();
@@ -43,6 +45,8 @@ function generateAddonJson() {
 }
 
 function uploadAssets() {
+  iam.getUser(function() {
+    console.dir(arguments);
   var client = s3.createClient({
     s3Options: {
       accessKeyId: awsAccessKeyId,
@@ -63,7 +67,7 @@ function uploadAssets() {
 
   var uploader = client.uploadDir(params);
   uploader.on('error', function(err) {
-    console.error("unable to sync:", err.stack);
+    console.error("unable to sync:", err.stack, util.inspect(err));
   });
   uploader.on('progress', function() {
     console.log("progress", uploader.progressAmount, uploader.progressTotal);
@@ -71,4 +75,6 @@ function uploadAssets() {
   uploader.on('end', function() {
     console.log("done uploading");
   });
+  });
+  
 }
