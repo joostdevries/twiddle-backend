@@ -2,7 +2,6 @@ var util = require('util');
 var AWS = require('aws-sdk');
 var s3 = require('s3');
 var fs = require('fs');
-var iam = new AWS.IAM();
 
 var awsAccessKeyId = process.env.AWS_ACCESS_KEY_ID;
 var awsSecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
@@ -45,8 +44,6 @@ function generateAddonJson() {
 }
 
 function uploadAssets() {
-  iam.getUser(function() {
-    console.dir(arguments);
   var client = s3.createClient({
     s3Options: {
       accessKeyId: awsAccessKeyId,
@@ -62,6 +59,7 @@ function uploadAssets() {
     s3Params: {
       Bucket: bucketName,
       Prefix: uploadPath,
+      ACL: 'public-read'
     },
   };
 
@@ -75,6 +73,4 @@ function uploadAssets() {
   uploader.on('end', function() {
     console.log("done uploading");
   });
-  });
-  
 }
