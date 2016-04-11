@@ -24,7 +24,7 @@ exports.handler = function(event, context) {
     addonVersion = data.version;
 
     checkIfAddonExists(emberVersion, addon, addonVersion, function(err) {
-      // if(err) {
+      if(err) {
         console.log('Building ', addon, addonVersion);
         buildAddon(emberVersion, addon, addonVersion, function(err, data) {
           console.log('Invocation complete');
@@ -32,12 +32,12 @@ exports.handler = function(event, context) {
           var addonS3Url = "https://s3.amazonaws.com/ember-twiddle-addons-beta/ember-"+emberVersion+"/"+addon+"/"+addonVersion+"/addon.json";
           context.done(null, {"location":addonS3Url});
         });
-      // }
-      // else {
-      //   console.log('Serving cached ', addon, addonVersion);
-      //   var addonS3Url = "https://s3.amazonaws.com/ember-twiddle-addons-beta/ember-"+emberVersion+"/"+addon+"/"+addonVersion+"/addon.json";
-      //   context.done(null, {"location":addonS3Url});
-      // }
+      }
+      else {
+        console.log('Serving cached ', addon, addonVersion);
+        var addonS3Url = "https://s3.amazonaws.com/ember-twiddle-addons-beta/ember-"+emberVersion+"/"+addon+"/"+addonVersion+"/addon.json";
+        context.done(null, {"location":addonS3Url});
+      }
     });
   });
  };
@@ -177,6 +177,7 @@ function buildAddon(emberVersion, addon, addonVersion, cb) {
       ecs.runTask(params, function(err, data) {
         if (err) console.log(err, err.stack); // an error occurred
         else     console.log(data);           // successful response
+        cb()
       });
     });
   });
