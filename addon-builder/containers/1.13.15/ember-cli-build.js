@@ -1,6 +1,7 @@
 /* global require, module */
 var EmberApp = require('ember-cli/lib/broccoli/ember-app');
 var mergeTrees    = require('ember-cli/lib/broccoli/merge-trees');
+var Funnel    = require('broccoli-funnel');
 
 function StubApp(options) {
   EmberApp.call(this, options);
@@ -36,7 +37,7 @@ EmptyTree.prototype.cleanup = function() {
 
 module.exports = function() {
   var app = new StubApp({
-    name: 'demo-app',
+    name: 'twiddle',
     tests: false,
     sourcemaps: {
       enabled: false
@@ -60,15 +61,20 @@ module.exports = function() {
   return mergeTrees([
     app.concatFiles(fullTree, {
       inputFiles: ['**/*.css'],
-      outputFile: '/addons.css',
-      allowNone: true,
+      outputFile: '/addon.css',
+      allowNone: false,
       annotation: 'Concat: Addon CSS'
+    }),
+
+    new Funnel(app.otherAssets(), {
+      srcDir:'assets',
+      destDir:'.'
     }),
 
     app.concatFiles(fullTree, {
       headerFiles: app.legacyFilesToAppend.concat(['vendor/addons.js']),
-      inputFiles: ['demo-app/**/*.js'],
-      outputFile: '/addons.js',
+      inputFiles: ['twiddle/**/*.js'],
+      outputFile: '/addon.js',
       allowNone: true,
       annotation: 'Concat: Addon JS'
     })

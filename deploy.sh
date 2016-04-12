@@ -1,4 +1,4 @@
-export AWS_ACCESS_KEY_ID="AKIAIRE2LBN7GUK3AHEA"
+export AWS_ACCESS_KEY_ID="AKIAIC3KJV3HHVNHRBDA"
 export AWS_SECRET_ACCESS_KEY=`security find-generic-password -a joostdevries -s twiddle-backend-deploy-aws-key -w`
 export AWS_DEFAULT_REGION="us-east-1"
 
@@ -17,14 +17,14 @@ function package_builder() {
 
 function upload_builder() {
   echo "Uploading builder to S3..."
-  aws s3 cp /tmp/twiddle-backend-builder.zip s3://twiddle-backend-src/twiddle-backend-builder.zip
+  aws s3 cp /tmp/twiddle-backend-builder.zip s3://twiddle-backend-lambda-src/twiddle-backend-builder.zip
 }
 
 function update_builder() {
   echo "Updating lambda..."
   aws lambda update-function-code \
     --function-name "build-addon-test" \
-    --s3-bucket twiddle-backend-src \
+    --s3-bucket twiddle-backend-lambda-src \
     --s3-key twiddle-backend-builder.zip \
     --publish
 }
@@ -44,14 +44,14 @@ function package_api() {
 
 function upload_api() {
   echo "Uploading api to S3..."
-  aws s3 cp /tmp/twiddle-backend-api.zip s3://twiddle-backend-src/twiddle-backend-api.zip
+  aws s3 cp /tmp/twiddle-backend-api.zip s3://twiddle-backend-lambda-src/twiddle-backend-api.zip
 }
 
 function update_api() {
   echo "Updating lambda..."
   aws lambda update-function-code \
     --function-name "get-addon-test" \
-    --s3-bucket twiddle-backend-src \
+    --s3-bucket twiddle-backend-lambda-src \
     --s3-key twiddle-backend-api.zip \
     --publish
 }
