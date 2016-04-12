@@ -37,7 +37,7 @@ EmptyTree.prototype.cleanup = function() {
 
 module.exports = function() {
   var app = new StubApp({
-    name: 'demo-app',
+    name: 'twiddle',
     tests: false,
     sourcemaps: {
       enabled: false
