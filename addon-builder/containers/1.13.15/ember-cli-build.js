@@ -73,7 +73,7 @@ module.exports = function() {
 
     app.concatFiles(fullTree, {
       headerFiles: app.legacyFilesToAppend.concat(['vendor/addons.js']),
-      inputFiles: ['demo-app/**/*.js'],
+      inputFiles: ['twiddle/**/*.js'],
       outputFile: '/addon.js',
       allowNone: true,
       annotation: 'Concat: Addon JS'
