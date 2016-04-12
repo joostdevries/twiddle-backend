@@ -33,7 +33,7 @@ function generateAddonJson() {
     addonJson.error_log = null;
   }
   else {
-    var buildLog = '';
+    var buildLog = fs.readFileSync('ember.log', 'utf8');
     addonJson.status = 'build_error';
     addonJson.addon_js = null;
     addonJson.addon_css = null;
