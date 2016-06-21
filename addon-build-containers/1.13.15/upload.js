@@ -8,11 +8,14 @@ var awsSecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
 var awsSessionToken = process.env.AWS_SESSION_TOKEN;
 var awsRegion = process.env.AWS_DEFAULT_REGION;
 
+var emberVersion = '1.13.15';
 var buildStatus = process.argv[2];
 var addonName = process.env.ADDON_NAME;
 var addonVersion = process.env.ADDON_VERSION;
-var uploadPath = 'ember-1.13.15/' + addonName + '/' + addonVersion;
+var uploadPath = 'ember-' + emberVersion + '/' + addonName + '/' + addonVersion;
 var bucketName = 'ember-twiddle-addons-beta';
+var schedulerLambdaFunctionname = 'beta-addon-scheduler';
+
 
 console.log('Generating json...');
 generateAddonJson();
@@ -72,5 +75,19 @@ function uploadAssets() {
   });
   uploader.on('end', function() {
     console.log("done uploading");
+
+    var params = {
+      FunctionName: schedulerLambdaFunctionname, /* required */
+      InvocationType: 'Event',
+      Payload: JSON.stringify({
+        triggered_by: 'builder'
+      }),
+    };
+    lambda.invoke(params, function(err) {
+      if(err) {
+        console.error(err);
+      }
+      console.log('Triggered schedulder');
+    });
   });
 }
