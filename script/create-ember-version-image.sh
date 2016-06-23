@@ -19,4 +19,38 @@ echo "Creating Docker image for Ember $EMBER_VERSION"
   $LOGIN;
   docker push $ECR_URL:$EMBER_VERSION)
 
+echo "Registering task definition addon-builder-$BUILDER_ENVIRONMENT-${EMBER_VERSION//\./-}"
+aws ecs register-task-definition --family "addon-builder-$BUILDER_ENVIRONMENT-${EMBER_VERSION//\./-}" --container-definitions  "[
+    {
+      \"volumesFrom\": [],
+      \"memory\": 550,
+      \"portMappings\": [],
+      \"essential\": true,
+      \"entryPoint\": [
+        \"/bin/sh\"
+      ],
+      \"mountPoints\": [],
+      \"name\": \"addon-builder\",
+      \"environment\": [
+        {
+          \"name\": \"AWS_DEFAULT_REGION\",
+          \"value\": \"us-east-1\"
+        }
+      ],
+      \"links\": [],
+      \"image\": \"$ECR_URL:$EMBER_VERSION\",
+      \"command\": [
+        \"/addon-builder/build-addon.sh\"
+      ],
+      \"logConfiguration\": {
+        \"logDriver\": \"awslogs\",
+        \"options\": {
+          \"awslogs-group\": \"addon-builder-logs-canary\",
+          \"awslogs-region\": \"us-east-1\"
+        }
+      },
+      \"cpu\": 1024
+    }
+  ]"
+
 echo 'Done'
