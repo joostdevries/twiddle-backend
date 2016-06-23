@@ -15,7 +15,7 @@ LOGIN=`aws ecr get-login --region us-east-1`
 
 echo "Creating Docker image for Ember $EMBER_VERSION"
 ( docker build --build-arg EMBER_VERSION=$EMBER_VERSION --build-arg BUILDER_ENVIRONMENT=$BUILDER_ENVIRONMENT -f addon-builder/Dockerfile -t addon-build-containers/$BUILDER_ENVIRONMENT:$EMBER_VERSION .;
-  docker tag addon-build-containers/$BUILDER_ENVIRONMENT:$EMBER_VERSION ECR_URL:$EMBER_VERSION;
+  docker tag addon-build-containers/$BUILDER_ENVIRONMENT:$EMBER_VERSION $ECR_URL:$EMBER_VERSION;
   $LOGIN;
   docker push $ECR_URL:$EMBER_VERSION)
 

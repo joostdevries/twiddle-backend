@@ -14,6 +14,10 @@ COPY addon-build-configs/$EMBER_VERSION/package.json /addon-builder/package.json
 RUN npm install
 RUN bower --allow-root install
 RUN ln -s /addon-builder/node_modules/ember-cli/bin/ember /bin/ember
+RUN rm /addon-builder/bower.json /addon-builder/package.json
+RUN ember init --skip-npm --skip-bower
+COPY addon-build-configs/$EMBER_VERSION/bower.json /addon-builder/bower.json
+COPY addon-build-configs/$EMBER_VERSION/package.json /addon-builder/package.json
 
 COPY addon-builder/ember-cli-build.js /addon-builder/ember-cli-build.js
 COPY addon-builder/build-addon.sh /addon-builder/build-addon.sh
