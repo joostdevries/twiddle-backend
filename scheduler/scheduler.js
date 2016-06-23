@@ -101,6 +101,16 @@ function createSTSTokenForBuild(buildData) {
           {
               "Effect": "Allow",
               "Action": [
+                  "lambda:InvokeAsync",
+                  "lambda:InvokeFunction"
+              ],
+              "Resource": [
+                  config.schedulerRole
+              ]
+          },
+          {
+              "Effect": "Allow",
+              "Action": [
                   "s3:GetBucketCORS",
                   "s3:GetBucketLocation",
                   "s3:GetBucketLogging",
@@ -156,10 +166,11 @@ function createSTSTokenForBuild(buildData) {
 
 function runBuild(buildData) {
   return new Promise(function(resolve, reject) {
-    console.log('Running build');
+    var emberVersion = buildData.build.ember_version;
+    console.log('Running build ' + config.builderTaskDefinition + '-' + emberVersion.replace(/\./gi,'-'));
 
     var params = {
-      taskDefinition: config.builderTaskDefinition, /* required */
+      taskDefinition: config.builderTaskDefinition + '-' + emberVersion.replace(/\./gi,'-'), /* required */
       cluster: 'ember-twiddle',
       count: 1,
       overrides: {

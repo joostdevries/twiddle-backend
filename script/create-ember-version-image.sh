@@ -23,7 +23,7 @@ echo "Registering task definition addon-builder-$BUILDER_ENVIRONMENT-${EMBER_VER
 aws ecs register-task-definition --family "addon-builder-$BUILDER_ENVIRONMENT-${EMBER_VERSION//\./-}" --container-definitions  "[
     {
       \"volumesFrom\": [],
-      \"memory\": 550,
+      \"memory\": 450,
       \"portMappings\": [],
       \"essential\": true,
       \"entryPoint\": [
@@ -49,7 +49,7 @@ aws ecs register-task-definition --family "addon-builder-$BUILDER_ENVIRONMENT-${
           \"awslogs-region\": \"us-east-1\"
         }
       },
-      \"cpu\": 1024
+      \"cpu\": 450
     }
   ]"
 
