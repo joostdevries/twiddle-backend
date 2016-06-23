@@ -29,7 +29,7 @@ var s3 = new AWS.S3();
 var lambda = new AWS.Lambda();
 
 
-exports.getAddon = function getAddon(event, context) {
+exports.handler = function getAddon(event, context) {
   var addon = event.addon;
   var addonVersion = event.addon_version;
   var emberVersion = event.ember_version;
@@ -37,6 +37,7 @@ exports.getAddon = function getAddon(event, context) {
   resolvePackage(addon, addonVersion, emberVersion)
     .catch(packageNotFound.bind(undefined, context))
     .then(s3LookupAddon.bind(undefined, context))
+    .then(createAddonJSON.bind(undefined, context))
     .then(scheduleAddonBuild.bind(undefined, context))
     .catch(function(err) {
       context.fail('An unknown error occurred: ' + JSON.stringify(err));
@@ -176,11 +177,17 @@ function createAddonJSON(context, addon) {
   return new Promise(function(resolve, reject) {
     console.log('Registering addon in S3');
 
+    if(addon.isAlreadyBuilt) {
+      console.log('Addon already built');
+      return resolve(addon);
+    }
+
     s3.putObject({
       Bucket: config.addonBucketName,
       ACL: 'public-read',
       Key: 'ember-' + addon.emberVersion + '/' + addon.name + '/' + addon.version + '/addon.json',
       ContentType: 'application/json',
+      CacheControl: 'max-age=0, no-cache',
       Body: JSON.stringify({
         status: 'building',
         status_date: new Date().toISOString(),

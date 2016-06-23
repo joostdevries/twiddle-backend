@@ -30,7 +30,7 @@ var ecs = new AWS.ECS();
 var sqs = new AWS.SQS();
 var sts = new AWS.STS();
 
-exports.scheduleBuild = function scheduleBuild(event, context) {
+exports.handler = function scheduleBuild(event, context) {
 
   console.log('Starting based on event: ' + JSON.stringify(event));
 
