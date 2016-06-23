@@ -2,7 +2,7 @@
 var config = require('./build-config');
 
 var util = require('util');
-var AWS = require('aws-sdk');
+var AWS = require('aws-sdk'); AWS.config.update({region:'us-east-1'});
 var lambda = new AWS.Lambda();
 var s3 = require('s3');
 var fs = require('fs');
