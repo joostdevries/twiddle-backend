@@ -6,12 +6,17 @@ export AWS_SECRET_ACCESS_KEY=`security find-generic-password -a joostdevries -s 
 export AWS_DEFAULT_REGION="us-east-1"
 
 export EMBER_VERSION=$1
+export BUILDER_ENVIRONMENT=$2
+source config/$BUILDER_ENVIRONMENT.sh
+
+echo "Deploying to $BUILDER_ENVIRONMENT..."
+
 LOGIN=`aws ecr get-login --region us-east-1`
 
 echo "Creating Docker image for Ember $EMBER_VERSION"
-( docker build  --build-arg EMBER_VERSION=$EMBER_VERSION -f addon-builder/Dockerfile -t addon-build-containers/canary:$EMBER_VERSION .;
-  docker tag addon-build-containers/canary:$EMBER_VERSION 620471542343.dkr.ecr.us-east-1.amazonaws.com/addon-build-containers/canary:$EMBER_VERSION;
+( docker build --build-arg EMBER_VERSION=$EMBER_VERSION --build-arg BUILDER_ENVIRONMENT=$BUILDER_ENVIRONMENT -f addon-builder/Dockerfile -t addon-build-containers/$BUILDER_ENVIRONMENT:$EMBER_VERSION .;
+  docker tag addon-build-containers/$BUILDER_ENVIRONMENT:$EMBER_VERSION ECR_URL:$EMBER_VERSION;
   $LOGIN;
-  docker push 620471542343.dkr.ecr.us-east-1.amazonaws.com/addon-build-containers/canary:$EMBER_VERSION)
+  docker push $ECR_URL:$EMBER_VERSION)
 
 echo 'Done'

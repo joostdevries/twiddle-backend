@@ -1,27 +1,5 @@
 /*jshint node:true */
-var ENVIRONMENT = 'canary';
-
-var configs = {
-  canary: {
-    addonBucketName: 'canary-addons.ember-twiddle.com',
-    schedulerSqsQueueUrl: 'https://sqs.us-east-1.amazonaws.com/620471542343/addon-builds-canary',
-    schedulerLambdaFunctionname: 'addon-build-scheduler-canary',
-    builderRole: 'arn:aws:iam::620471542343:role/addon-builder-role-canary',
-    builderClusterName: 'ember-twiddle',
-    builderTaskDefinition: 'addon-builder-canary'
-  },
-
-  production: {
-    addonBucketName: 'addons.ember-twiddle.com',
-    schedulerSqsQueueUrl: 'https://sqs.us-east-1.amazonaws.com/620471542343/addon-builds-production',
-    schedulerLambdaFunctionname: 'addon-build-scheduler-production',
-    builderRole: 'arn:aws:iam::620471542343:role/addon-builder-role-production',
-    builderClusterName: 'ember-twiddle',
-    builderTaskDefinition: 'addon-builder'
-  }
-};
-
-var config = configs[ENVIRONMENT];
+var config = require('./config');
 
 var AWS = require('aws-sdk');
 var http = require('http');
@@ -30,6 +8,9 @@ var lambda = new AWS.Lambda();
 
 
 exports.handler = function getAddon(event, context) {
+
+  console.log('Running in env: ' + config.env);
+
   var addon = event.addon;
   var addonVersion = event.addon_version;
   var emberVersion = event.ember_version;
