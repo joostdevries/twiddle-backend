@@ -15,7 +15,7 @@ RUN npm install
 RUN bower --allow-root install
 RUN ln -s /addon-builder/node_modules/ember-cli/bin/ember /bin/ember
 RUN rm /addon-builder/bower.json /addon-builder/package.json
-RUN ember init --skip-npm --skip-bower
+RUN ember init --skip-npm --skip-bower --name twiddle
 COPY addon-build-configs/$EMBER_VERSION/bower.json /addon-builder/bower.json
 COPY addon-build-configs/$EMBER_VERSION/package.json /addon-builder/package.json
 
