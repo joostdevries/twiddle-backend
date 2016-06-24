@@ -21,7 +21,7 @@ exports.handler = function getAddon(event, context) {
     .then(createAddonJSON.bind(undefined, context))
     .then(scheduleAddonBuild.bind(undefined, context))
     .catch(function(err) {
-      context.fail('An unknown error occurred: ' + JSON.stringify(err));
+      context.fail('An unknown error occurred: ' + err);
     })
     .then(redirectToAddon.bind(undefined, context));
 };
@@ -98,8 +98,8 @@ function redirectToAddon(context, addon) {
  * @param  {[type]} packageData [description]
  * @return {[type]}             [description]
  */
-function packageNotFound(context, packageData) {
-  context.fail('Version or package not found or not a valid addon, package details: ' + JSON.stringify(data));
+function packageNotFound(context, npmError) {
+  context.fail('Version or package not found or not a valid addon, error details: ' + npmError);
 }
 
 /**
