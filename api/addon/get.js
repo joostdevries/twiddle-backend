@@ -37,6 +37,8 @@ function resolvePackage(addon, addonVersion, emberVersion) {
   return new Promise(function(resolve, reject) {
     console.log('Resolving addon in NPM');
 
+    emberVersion = resolveBuilderEmberVersion(emberVersion);
+
     return http.get({
       host: 'registry.npmjs.com',
       path: '/' + addon + '/' + addonVersion
@@ -77,6 +79,23 @@ function isValidAddon(npmData) {
       return (npmData.keywords.indexOf('ember-addon')!==-1);
     }
   }
+}
+
+/**
+ * Resolves ember version for the builder, raises if not found
+ * @param  {[type]} emberVersion [description]
+ * @return {[type]}              [description]
+ */
+function resolveBuilderEmberVersion(emberVersion) {
+  for (var builderVersion in config.builderEmberVersions) {
+    var builderVersionSupportRe = config.builderEmberVersions[builderVersion];
+    if(emberVersion.match(builderVersionSupportRe)) {
+      return builderVersion;
+    }
+  }
+
+  throw Error('No support for ember version "' + emberVersion + '".\n' +
+              'Supported versions: "' + Object.keys(config.builderEmberVersions).join('", "') + '"');
 }
 
 /**
@@ -174,8 +193,7 @@ function createAddonJSON(context, addon) {
         status_date: new Date().toISOString(),
         addon_js: null,
         addon_css: null,
-        errors: null,
-        ember_errors: null,
+        error_log: null
       })
     }, function(err) {
       if (err) {

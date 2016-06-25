@@ -12,7 +12,7 @@ var awsSecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
 var awsSessionToken = process.env.AWS_SESSION_TOKEN;
 var awsRegion = process.env.AWS_DEFAULT_REGION;
 
-var emberVersion = '1.13.15';
+var emberVersion = require('./bower.json').dependencies.ember;
 var installStatus = process.argv[2];
 var buildStatus = process.argv[3];
 var addonName = process.env.ADDON_NAME;
@@ -28,9 +28,25 @@ uploadAssets();
 
 // Generate addon.json with details on build
 function generateAddonJson() {
+  var buildLog = fs.readFileSync('ember.log', 'utf8');
   var addonJson = {
     status_date: new Date().toISOString(),
   };
+
+  try {
+    if(!fs.readFileSync('dist/addon.js', 'utf8').length) {
+      buildLog = buildLog + '\nEmpty addon.js created';
+      buildStatus = '1';
+    }
+  }
+  catch(e) {
+    buildLog = buildLog + '\nNo addon.js created';
+    buildStatus = '1';
+    try {
+      fs.mkdirSync('dist');
+    }
+    catch(e) {}
+  }
 
   if (buildStatus==='0' && installStatus==='0') {
     addonJson.status = 'build_success';
@@ -39,7 +55,6 @@ function generateAddonJson() {
     addonJson.error_log = null;
   }
   else {
-    var buildLog = fs.readFileSync('ember.log', 'utf8');
     addonJson.status = 'build_error';
     addonJson.addon_js = null;
     addonJson.addon_css = null;
