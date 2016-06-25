@@ -14,7 +14,7 @@ StubApp.prototype.constructor = StubApp;
 // legacyFilesToAppend list.
 StubApp.prototype.populateLegacyFiles = function() {};
 
-var quickTemp = require('quick-temp');
+var quickTemp = require('ember-cli/node_modules/quick-temp');
 var fs = require('fs');
 var path = require('path');
 

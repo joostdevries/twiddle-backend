@@ -2,8 +2,11 @@
   "name": "twiddle",
   "dependencies": {
     "ember": "2.6.0",
-    "ember-cli-shims": "0.1.1",
-    "ember-cli-test-loader": "0.2.2",
-    "ember-qunit-notifications": "0.1.0"
+    "ember-cli-shims": "ember-cli/ember-cli-shims",
+    "ember-load-initializers": "ember-cli/ember-load-initializers#0.1.5",
+    "jquery": "^1.11.1"
+  },
+  "resolutions": {
+    "ember": "2.6.0"
   }
 }

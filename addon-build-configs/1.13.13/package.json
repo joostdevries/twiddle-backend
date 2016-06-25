@@ -26,7 +26,6 @@
     "ember-cli-htmlbars-inline-precompile": "^0.1.1",
     "ember-cli-uglify": "^1.0.1",
 
-    "quick-temp": "latest",
     "aws-sdk": "2.4",
     "s3": "4.4.0"
   }
