@@ -1,5 +1,12 @@
-export AWS_ACCESS_KEY_ID="AKIAIC3KJV3HHVNHRBDA"
-export AWS_SECRET_ACCESS_KEY=`security find-generic-password -a joostdevries -s twiddle-backend-deploy-aws-key -w`
+#!/bin/bash
+set -e
+
+if [ -z ${AWS_ACCESS_KEY_ID+x} ]; then
+  read -p 'Access Key ID: ' ACCESS_KEY_ID
+  read -sp 'Secret Access Key: ' SECRET_ACCESS_KEY
+  export AWS_ACCESS_KEY_ID=${ACCESS_KEY_ID}
+  export AWS_SECRET_ACCESS_KEY=${SECRET_ACCESS_KEY}
+fi
 export AWS_DEFAULT_REGION="us-east-1"
 
 export ENV=$1

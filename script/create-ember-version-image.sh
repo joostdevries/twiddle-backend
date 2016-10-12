@@ -1,13 +1,23 @@
 #!/bin/bash
 set -e
 
-export AWS_ACCESS_KEY_ID="AKIAIC3KJV3HHVNHRBDA"
-export AWS_SECRET_ACCESS_KEY=`security find-generic-password -a joostdevries -s twiddle-backend-deploy-aws-key -w`
+if [ -z ${AWS_ACCESS_KEY_ID+x} ]; then
+  read -p 'Access Key ID: ' ACCESS_KEY_ID
+  read -sp 'Secret Access Key: ' SECRET_ACCESS_KEY
+  export AWS_ACCESS_KEY_ID=${ACCESS_KEY_ID}
+  export AWS_SECRET_ACCESS_KEY=${SECRET_ACCESS_KEY}
+fi
 export AWS_DEFAULT_REGION="us-east-1"
 
 export EMBER_VERSION=$1
 export BUILDER_ENVIRONMENT=$2
 source config/$BUILDER_ENVIRONMENT.sh
+
+if [ "$BUILDER_ENVIRONMENT" == "staging" ]; then
+  export ENV_SUFFIX="canary"
+else
+  export ENV_SUFFIX="production"
+fi
 
 echo "Deploying to $BUILDER_ENVIRONMENT..."
 
@@ -45,7 +55,7 @@ aws ecs register-task-definition --family "addon-builder-$BUILDER_ENVIRONMENT-${
       \"logConfiguration\": {
         \"logDriver\": \"awslogs\",
         \"options\": {
-          \"awslogs-group\": \"addon-builder-logs-canary\",
+          \"awslogs-group\": \"addon-builder-logs-$ENV_SUFFIX\",
           \"awslogs-region\": \"us-east-1\"
         }
       },
