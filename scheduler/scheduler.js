@@ -70,8 +70,7 @@ function getNextBuildFromSQS() {
     var params = {
       QueueUrl: config.schedulerSqsQueueUrl,
       MaxNumberOfMessages: 1,
-      VisibilityTimeout: 5,
-      WaitTimeSeconds: 0
+      VisibilityTimeout: 5
     };
 
     sqs.receiveMessage(params, function(err, data) {
