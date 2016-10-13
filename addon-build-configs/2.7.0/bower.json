@@ -1,0 +1,11 @@
+{
+  "name": "twiddle",
+  "dependencies": {
+    "ember": "2.7.0",
+    "ember-cli-shims": "0.1.1",
+    "jquery": "^1.11.1"
+  },
+  "resolutions": {
+    "ember": "2.7.0"
+  }
+}

@@ -9,6 +9,7 @@ WORKDIR /addon-builder
 ARG EMBER_VERSION
 
 COPY addon-build-configs/$EMBER_VERSION/package.json /addon-builder/package.json
+RUN npm install -g ember-cli
 RUN npm install
 
 COPY addon-build-configs/$EMBER_VERSION/bower.json /addon-builder/bower.json
