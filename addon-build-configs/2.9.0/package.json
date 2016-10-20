@@ -29,6 +29,7 @@
     "ember-resolver": "^2.0.3",
     "loader.js": "^4.0.1",
 
+    "broccoli-funnel": "^1.0.7",
     "aws-sdk": "2.4",
     "s3": "4.4.0"
   }

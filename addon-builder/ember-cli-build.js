@@ -2,6 +2,9 @@
 var EmberApp = require('ember-cli/lib/broccoli/ember-app');
 var mergeTrees    = require('ember-cli/lib/broccoli/merge-trees');
 var Funnel    = require('broccoli-funnel');
+var path = require('path');
+
+EmberApp.env = function() { return 'development'; }
 
 function StubApp(options) {
   EmberApp.call(this, options);
@@ -13,6 +16,31 @@ StubApp.prototype.constructor = StubApp;
 // want to let addons stick their own imports into the
 // legacyFilesToAppend list.
 StubApp.prototype.populateLegacyFiles = function() {};
+
+var importedJsFiles = [];
+var importedCssFiles = [];
+
+// Files included via app.import need to end up in addon.js
+StubApp.prototype.import = function(assetPath, options) {
+  options = options || {};
+  var ext = path.extname(assetPath);
+  var isCss = ext === 'css';
+  if (isCss) {
+    if (options.prepend) {
+      importedCssFiles.unshift(assetPath);
+    } else {
+      importedCssFiles.push(assetPath);
+    }
+  } else {
+    if (options.prepend) {
+      importedJsFiles.unshift(assetPath);
+    } else {
+      importedJsFiles.push(assetPath);
+    }
+  }
+
+  EmberApp.prototype.import.call(this, assetPath, options);
+};
 
 var quickTemp = require('ember-cli/node_modules/quick-temp');
 var fs = require('fs');
@@ -60,6 +88,7 @@ module.exports = function() {
 
   return mergeTrees([
     app.concatFiles(fullTree, {
+      headerFiles: importedCssFiles,
       inputFiles: ['**/*.css'],
       outputFile: '/addon.css',
       allowNone: false,
@@ -72,7 +101,7 @@ module.exports = function() {
     }),
 
     app.concatFiles(fullTree, {
-      headerFiles: app.legacyFilesToAppend.concat(['vendor/addons.js']),
+      headerFiles: importedJsFiles.concat(app.legacyFilesToAppend).concat(['vendor/addons.js']),
       inputFiles: ['twiddle/**/*.js'],
       outputFile: '/addon.js',
       allowNone: true,
@@ -80,4 +109,5 @@ module.exports = function() {
     })
   ]);
 
+  return fullTree;
 };
