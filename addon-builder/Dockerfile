@@ -1,4 +1,4 @@
-FROM mhart/alpine-node:5.7.0
+FROM mhart/alpine-node:6.9.2
 
 RUN apk --update add git
 RUN npm install -g bower@1.7.7

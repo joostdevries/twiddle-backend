@@ -42,7 +42,7 @@ StubApp.prototype.import = function(assetPath, options) {
   EmberApp.prototype.import.call(this, assetPath, options);
 };
 
-var quickTemp = require('ember-cli/node_modules/quick-temp');
+var quickTemp = require('quick-temp');
 var fs = require('fs');
 var path = require('path');
 
@@ -97,7 +97,8 @@ module.exports = function() {
 
     new Funnel(app.otherAssets(), {
       srcDir:'assets',
-      destDir:'.'
+      destDir:'.',
+      allowEmpty:true
     }),
 
     app.concatFiles(fullTree, {
