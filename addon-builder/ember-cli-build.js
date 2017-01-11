@@ -24,7 +24,7 @@ var importedCssFiles = [];
 StubApp.prototype.import = function(assetPath, options) {
   options = options || {};
   var ext = path.extname(assetPath);
-  var isCss = ext === 'css';
+  var isCss = ext === '.css';
   if (isCss) {
     if (options.prepend) {
       importedCssFiles.unshift(assetPath);
