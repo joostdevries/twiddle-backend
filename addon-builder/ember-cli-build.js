@@ -23,6 +23,11 @@ var importedCssFiles = [];
 // Files included via app.import need to end up in addon.js
 StubApp.prototype.import = function(assetPath, options) {
   options = options || {};
+  
+  if (typeof asset === 'object') {
+    assetPath = assetPath[this.env];
+  }
+  
   var ext = path.extname(assetPath);
   var isCss = ext === '.css';
   if (isCss) {
