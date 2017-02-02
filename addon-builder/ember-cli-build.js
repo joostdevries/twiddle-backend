@@ -21,7 +21,7 @@ var importedJsFiles = [];
 var importedCssFiles = [];
 
 var filesToExclude = [
-  'vendor/loader/loader.js'
+  'loader.js'
 ];
 
 // Files included via app.import need to end up in addon.js
@@ -32,7 +32,7 @@ StubApp.prototype.import = function(assetPath, options) {
     assetPath = assetPath[this.env];
   }
 
-  if (filesToExclude.indexOf(assetPath) === -1) {
+  if (filesToExclude.filter(function(file) {return assetPath.indexOf(file) === -1}).length > 0) {
 
     var ext = path.extname(assetPath);
     var isCss = ext === '.css';
