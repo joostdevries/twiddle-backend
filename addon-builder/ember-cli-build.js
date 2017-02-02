@@ -20,27 +20,34 @@ StubApp.prototype.populateLegacyFiles = function() {};
 var importedJsFiles = [];
 var importedCssFiles = [];
 
+var filesToExclude = [
+  'vendor/loader/loader.js'
+];
+
 // Files included via app.import need to end up in addon.js
 StubApp.prototype.import = function(assetPath, options) {
   options = options || {};
-  
+
   if (typeof assetPath === 'object') {
     assetPath = assetPath[this.env];
   }
-  
-  var ext = path.extname(assetPath);
-  var isCss = ext === '.css';
-  if (isCss) {
-    if (options.prepend) {
-      importedCssFiles.unshift(assetPath);
+
+  if (filesToExclude.indexOf(assetPath) === -1) {
+
+    var ext = path.extname(assetPath);
+    var isCss = ext === '.css';
+    if (isCss) {
+      if (options.prepend) {
+        importedCssFiles.unshift(assetPath);
+      } else {
+        importedCssFiles.push(assetPath);
+      }
     } else {
-      importedCssFiles.push(assetPath);
-    }
-  } else {
-    if (options.prepend) {
-      importedJsFiles.unshift(assetPath);
-    } else {
-      importedJsFiles.push(assetPath);
+      if (options.prepend) {
+        importedJsFiles.unshift(assetPath);
+      } else {
+        importedJsFiles.push(assetPath);
+      }
     }
   }
 
@@ -75,12 +82,12 @@ module.exports = function() {
     sourcemaps: {
       enabled: false
     },
-     minifyCSS: {
-       enabled: false,
-     },
-     minifyJS: {
+    minifyCSS: {
+      enabled: false,
+    },
+    minifyJS: {
       enabled: false
-     },
+    },
     trees: {
       app: new EmptyTree(),
       styles: new EmptyTree(['app.css', 'app.scss']),
