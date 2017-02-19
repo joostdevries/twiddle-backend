@@ -106,6 +106,7 @@ module.exports = function() {
       inputFiles: ['**/*.css'],
       outputFile: '/addon.css',
       allowNone: false,
+      sourceMapConfig: { enabled: false },
       annotation: 'Concat: Addon CSS'
     }),
 
@@ -120,6 +121,7 @@ module.exports = function() {
       inputFiles: ['twiddle/**/*.js'],
       outputFile: '/addon.js',
       allowNone: true,
+      sourceMapConfig: { enabled: false },
       annotation: 'Concat: Addon JS'
     })
   ]);
