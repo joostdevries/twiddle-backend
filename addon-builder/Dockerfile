@@ -28,5 +28,5 @@ COPY addon-builder/upload.js /addon-builder/upload.js
 ARG BUILDER_ENVIRONMENT
 COPY config/$BUILDER_ENVIRONMENT.js /addon-builder/build-config.js
 
-ENTRYPOINT ['/addon-builder/build-addon.sh']
+ENTRYPOINT ["/addon-builder/build-addon.sh"]
 EXPOSE 4200

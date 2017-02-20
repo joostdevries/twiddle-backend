@@ -1,7 +1,8 @@
 /* global require, module */
 var EmberApp = require('ember-cli/lib/broccoli/ember-app');
-var mergeTrees    = require('ember-cli/lib/broccoli/merge-trees');
-var Funnel    = require('broccoli-funnel');
+var mergeTrees = require('ember-cli/lib/broccoli/merge-trees');
+var Funnel = require('broccoli-funnel');
+var concat = require('broccoli-concat');
 var path = require('path');
 
 EmberApp.env = function() { return 'development'; }
@@ -91,20 +92,21 @@ module.exports = function() {
     },
     trees: {
       app: new EmptyTree(),
-      styles: new EmptyTree(['app.css', 'app.scss']),
+      styles: ['app.css', 'app.scss'],
       templates: new EmptyTree(),
       public: new EmptyTree()
     }
   });
 
-  var fullTree = app.appAndDependencies();
+  var fullTree = mergeTrees([app.appAndDependencies(), app.styles()])
 
   return mergeTrees([
-    app.concatFiles(fullTree, {
+    concat(fullTree, {
       headerFiles: importedCssFiles,
       inputFiles: ['**/*.css'],
       outputFile: '/addon.css',
       allowNone: false,
+      sourceMapConfig: { enabled: false },
       annotation: 'Concat: Addon CSS'
     }),
 
@@ -114,14 +116,13 @@ module.exports = function() {
       allowEmpty:true
     }),
 
-    app.concatFiles(fullTree, {
+    concat(fullTree, {
       headerFiles: importedJsFiles.concat(app.legacyFilesToAppend).concat(['vendor/addons.js']),
       inputFiles: ['twiddle/**/*.js'],
       outputFile: '/addon.js',
       allowNone: true,
+      sourceMapConfig: { enabled: false },
       annotation: 'Concat: Addon JS'
     })
   ]);
-
-  return fullTree;
 };
