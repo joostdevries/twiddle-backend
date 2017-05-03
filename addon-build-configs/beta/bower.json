@@ -1,0 +1,10 @@
+{
+  "name": "twiddle",
+  "dependencies": {
+    "ember": "beta",
+    "jquery": "^1.11.1"
+  },
+  "resolutions": {
+    "ember": "beta"
+  }
+}

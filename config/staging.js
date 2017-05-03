@@ -24,6 +24,7 @@ module.exports = {
       '2.10.1': /2\.10\./,
       '2.11.0': /2\.11\./,
       '2.12.0': /2\.12\./,
-      'canary': /^canary$/
+      'canary': /^canary$/,
+      'beta': /^beta$/
     }
 };
