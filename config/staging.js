@@ -24,9 +24,13 @@ module.exports = {
       '2.10.1': /2\.10\./,
       '2.11.0': /2\.11\./,
       '2.12.0': /2\.12\./,
-      'alpha': /^alpha$/,
-      'canary': /^canary$/,
-      'beta': /^beta$/,
-      'release': /^release$/
+
+      // support multiple canary / beta / release cycles
+      // by tying them to a specific Ember version at
+      // the time of deployment
+      'alpha-2.15': /^alpha$/,
+      'canary-2.15': /^canary$/,
+      'beta-2.14': /^beta$/,
+      'release-2-13': /^release$/
     }
 };
