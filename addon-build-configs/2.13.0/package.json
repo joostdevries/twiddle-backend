@@ -20,10 +20,11 @@
   "license": "MIT",
   "devDependencies": {
     "broccoli-asset-rev": "^2.4.5",
-    "ember-cli": "2.13.0",
+    "ember-cli": "2.13.1",
     "ember-cli-babel": "^6.0.0",
     "ember-cli-htmlbars": "^1.1.1",
     "ember-cli-htmlbars-inline-precompile": "^0.4.0",
+    "ember-cli-shims": "^1.1.0",
     "ember-cli-uglify": "^1.2.0",
     "ember-load-initializers": "^1.0.0",
     "ember-resolver": "^4.0.0",

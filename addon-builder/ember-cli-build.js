@@ -8,10 +8,10 @@ var path = require('path');
 EmberApp.env = function() { return 'development'; }
 
 function StubApp(options) {
-  EmberApp.call(this, options);
+  return Reflect.construct(EmberApp, [options], StubApp);
 }
-StubApp.prototype = Object.create(EmberApp.prototype);
-StubApp.prototype.constructor = StubApp;
+Reflect.setPrototypeOf(StubApp.prototype, EmberApp.prototype);
+Reflect.setPrototypeOf(StubApp, EmberApp);
 
 // We don't want any of the default legacy files. But we *do* still
 // want to let addons stick their own imports into the
@@ -92,7 +92,7 @@ module.exports = function() {
     },
     trees: {
       app: new EmptyTree(),
-      styles: ['app.css', 'app.scss'],
+      styles: new EmptyTree(['app.css', 'app.scss']),
       templates: new EmptyTree(),
       public: new EmptyTree()
     }
