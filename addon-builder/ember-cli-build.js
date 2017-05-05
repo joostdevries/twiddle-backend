@@ -22,7 +22,9 @@ var importedJsFiles = [];
 var importedCssFiles = [];
 
 var filesToExclude = [
-  'loader.js'
+  'loader.js',
+  'legacy-shims.js',
+  'app-shims.js'
 ];
 
 // Files included via app.import need to end up in addon.js
@@ -33,7 +35,7 @@ StubApp.prototype.import = function(assetPath, options) {
     assetPath = assetPath[this.env];
   }
 
-  if (filesToExclude.filter(function(file) {return assetPath.indexOf(file) === -1}).length > 0) {
+  if (filesToExclude.filter(file => assetPath.indexOf(file) !== -1).length === 0) {
 
     var ext = path.extname(assetPath);
     var isCss = ext === '.css';
@@ -98,7 +100,11 @@ module.exports = function() {
     }
   });
 
-  var fullTree = mergeTrees([app.appAndDependencies(), app.styles()])
+  var addonTree = concat(app._addonTree(), {
+    outputFile: 'vendor/addons.js'
+  });
+
+  var fullTree = mergeTrees([app.appAndDependencies(), app.styles(), addonTree]);
 
   return mergeTrees([
     concat(fullTree, {
