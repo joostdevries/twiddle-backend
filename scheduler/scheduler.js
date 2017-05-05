@@ -197,6 +197,10 @@ function runBuild(buildData) {
                 name: 'ADDON_VERSION',
                 value: buildData.build.addon_version
               },
+              {
+                name: 'EMBER_VERSION',
+                value: buildData.build.ember_version
+              }
             ]
           }
         ]
@@ -233,4 +237,3 @@ function deQueue(buildData) {
       });
   });
 }
-

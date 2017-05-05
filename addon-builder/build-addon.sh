@@ -5,4 +5,7 @@ INSTALL_STATUS=$?
 echo "Building $ADDON_NAME@$ADDON_VERSION..."
 ember build >> ember.log 2>&1
 BUILD_STATUS=$?
+cat ember.log
+ls dist/
+echo "Uploading $ADDON_NAME@$ADDON_VERSION..."
 node upload.js $INSTALL_STATUS $BUILD_STATUS

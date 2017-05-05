@@ -12,7 +12,7 @@ var awsSecretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
 var awsSessionToken = process.env.AWS_SESSION_TOKEN;
 var awsRegion = process.env.AWS_DEFAULT_REGION;
 
-var emberVersion = require('./bower.json').dependencies.ember;
+var emberVersion = process.env.EMBER_VERSION;
 var installStatus = process.argv[2];
 var buildStatus = process.argv[3];
 var addonName = process.env.ADDON_NAME;
