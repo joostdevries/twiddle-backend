@@ -21,7 +21,7 @@ fi
 
 echo "Deploying to $BUILDER_ENVIRONMENT..."
 
-LOGIN=`aws ecr get-login --region us-east-1`
+LOGIN=`aws ecr get-login --region us-east-1 --no-include-email`
 
 echo "Creating Docker image for Ember $EMBER_VERSION"
 ( docker build --build-arg EMBER_VERSION=$EMBER_VERSION --build-arg BUILDER_ENVIRONMENT=$BUILDER_ENVIRONMENT -f addon-builder/Dockerfile -t addon-build-containers/$BUILDER_ENVIRONMENT:$EMBER_VERSION .;
