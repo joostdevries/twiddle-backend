@@ -1,0 +1,39 @@
+{
+  "name": "twiddle",
+  "version": "0.0.0",
+  "description": "Small description for addon-builder-2-13-0 goes here",
+  "directories": {
+    "doc": "doc",
+    "test": "tests"
+  },
+  "scripts": {
+    "start": "ember server",
+    "build": "ember build",
+    "test": "ember test"
+  },
+  "repository": "",
+  "engines": {
+    "node": ">= 4"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "broccoli-asset-rev": "^2.4.5",
+    "ember-cli": "~2.15.1",
+    "ember-cli-babel": "^6.3.0",
+    "ember-cli-htmlbars": "^2.0.1",
+    "ember-cli-htmlbars-inline-precompile": "^1.0.0",
+    "ember-cli-shims": "^1.1.0",
+    "ember-cli-uglify": "^1.2.0",
+    "ember-load-initializers": "^1.0.0",
+    "ember-resolver": "^4.0.0",
+    "ember-source": "~2.15.3",
+    "loader.js": "^4.2.3",
+
+    "broccoli-funnel": "^1.0.7",
+    "broccoli-concat": "^3.2.2",
+    "aws-sdk": "2.4",
+    "s3": "4.4.0",
+    "quick-temp": "0.1.6"
+  }
+}
