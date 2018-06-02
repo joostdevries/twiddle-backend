@@ -2,7 +2,7 @@
 var config = require('./config');
 
 var AWS = require('aws-sdk');
-var http = require('http');
+var https = require('https');
 var s3 = new AWS.S3();
 var lambda = new AWS.Lambda();
 
@@ -39,7 +39,7 @@ function resolvePackage(addon, addonVersion, emberVersion) {
 
     emberVersion = resolveBuilderEmberVersion(emberVersion);
 
-    return http.get({
+    return https.get({
       host: 'registry.npmjs.com',
       path: '/' + addon + '/' + addonVersion
     }, function(response) {
@@ -48,6 +48,12 @@ function resolvePackage(addon, addonVersion, emberVersion) {
         body += d;
       });
       response.on('end', function() {
+        var npmData;
+        try {
+          npmData = JSON.parse(body);
+        } catch(error) {
+          reject(`Failed to parse json from registry.npmjs.com/${addon}/${addonVersion}: Error: ${error}`);
+        }
         var npmData = JSON.parse(body);
         if (isValidAddon(npmData)) {
           resolve({
