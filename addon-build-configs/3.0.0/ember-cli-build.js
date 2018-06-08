@@ -100,7 +100,7 @@ module.exports = function() {
     }
   });
 
-  var addonTree = concat(app.addonTree(), {
+  var addonTree = concat(app._addonTree(), {
     outputFile: 'vendor/addons.js'
   });
 

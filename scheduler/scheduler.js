@@ -148,7 +148,7 @@ function createSTSTokenForBuild(buildData) {
     var stsParams = {
       RoleArn: config.builderRole,
       RoleSessionName: 'build-addon',
-      DurationSeconds: 900,
+      DurationSeconds: 1800,
       Policy: JSON.stringify(buildAddonPolicy)
     };
 

@@ -21,8 +21,8 @@ RUN ember init --skip-npm --skip-bower --name twiddle
 
 COPY addon-build-configs/$EMBER_VERSION/bower.json /addon-builder/bower.json
 COPY addon-build-configs/$EMBER_VERSION/package.json /addon-builder/package.json
+COPY addon-build-configs/$EMBER_VERSION/ember-cli-build.js /addon-builder/ember-cli-build.js
 
-COPY addon-builder/ember-cli-build.js /addon-builder/ember-cli-build.js
 COPY addon-builder/build-addon.sh /addon-builder/build-addon.sh
 COPY addon-builder/upload.js /addon-builder/upload.js
 ARG BUILDER_ENVIRONMENT
