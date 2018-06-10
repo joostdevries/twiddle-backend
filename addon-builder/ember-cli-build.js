@@ -101,10 +101,11 @@ module.exports = function() {
   });
 
   var addonTree = concat(app.addonTree(), {
+    inputFiles: '**/*.js',
     outputFile: 'vendor/addons.js'
   });
 
-  var fullTree = mergeTrees([app.appAndDependencies(), app.styles(), addonTree]);
+  var fullTree = mergeTrees([app.appAndDependencies(), app.styles(), app.addonTree(), addonTree], { overwrite: true });
 
   return mergeTrees([
     concat(fullTree, {

@@ -1,7 +1,7 @@
-FROM mhart/alpine-node:6.9.2
+FROM node:8-alpine
 
 RUN apk --update add git
-RUN npm install -g bower@1.7.7
+RUN npm install -g bower
 
 RUN mkdir /addon-builder
 WORKDIR /addon-builder
