@@ -4,6 +4,7 @@ var mergeTrees = require('ember-cli/lib/broccoli/merge-trees');
 var Funnel = require('broccoli-funnel');
 var concat = require('broccoli-concat');
 var path = require('path');
+var assetRev = require('broccoli-asset-rev');
 
 EmberApp.env = function() { return 'development'; }
 
@@ -106,7 +107,7 @@ module.exports = function() {
 
   var fullTree = mergeTrees([app.appAndDependencies(), app.styles(), addonTree]);
 
-  return mergeTrees([
+  var mergedTree = mergeTrees([
     concat(fullTree, {
       headerFiles: importedCssFiles,
       inputFiles: ['**/*.css'],
@@ -131,4 +132,10 @@ module.exports = function() {
       annotation: 'Concat: Addon JS'
     })
   ]);
+
+  var fingerprintedTree = new assetRev(mergedTree, {
+    generateAssetMap: true
+  });
+
+  return fingerprintedTree;
 };

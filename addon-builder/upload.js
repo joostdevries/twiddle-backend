@@ -32,15 +32,33 @@ function generateAddonJson() {
   var addonJson = {
     status_date: new Date().toISOString(),
   };
+  var assetMapJson, addonJsPath, addonCssPath
 
   try {
-    if(!fs.readFileSync('dist/addon.js', 'utf8').length) {
-      buildLog = buildLog + '\nEmpty addon.js created';
+    assetMapJson = fs.readFileSync('dist/assets/assetMap.json', 'utf8');
+    if (!assetMapJson) {
+      buildLog += '\nAsset JSON manifest not created';
+      buildStatus = '1';
+      throw Error();
+    }
+    try {
+      assetMapJson = JSON.parse(assetMapJson);
+    } catch(e) {
+      buildLog += e.message;
+      buildStatus = '1';
+      throw Error();
+    }
+
+    addonJsPath = assetMapJson.assets['addon.js'];
+    addonCssPath = assetMapJson.assets['addon.css'];
+
+    if(!fs.readFileSync('dist/' + addonJsPath, 'utf8').length) {
+      buildLog += '\nEmpty addon.js created';
       buildStatus = '1';
     }
   }
   catch(e) {
-    buildLog = buildLog + '\nNo addon.js created';
+    buildLog += '\nNo addon.js created';
     buildStatus = '1';
     try {
       fs.mkdirSync('dist');
@@ -50,8 +68,8 @@ function generateAddonJson() {
 
   if (buildStatus==='0' && installStatus==='0') {
     addonJson.status = 'build_success';
-    addonJson.addon_js = '//' + config.addonBucketName + '/' + uploadPath + '/addon.js';
-    addonJson.addon_css = '//' + config.addonBucketName + '/' + uploadPath + '/addon.css';
+    addonJson.addon_js = '//' + config.addonBucketName + '/' + uploadPath + '/' + addonJsPath;
+    addonJson.addon_css = '//' + config.addonBucketName + '/' + uploadPath + '/' + addonCssPath;
     addonJson.error_log = null;
   }
   else {
