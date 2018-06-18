@@ -106,7 +106,22 @@ module.exports = function() {
     outputFile: 'vendor/addons.js'
   });
 
-  var fullTree = mergeTrees([app.appAndDependencies(), app.styles(), app.addonTree(), addonTree], { overwrite: true });
+  var addonTestSupportTree = concat(app.addonTestSupportTree(), {
+    outputFile: 'vendor/addon-test-support.js',
+    allowNone: true
+  });
+
+  var fullTree = mergeTrees([
+    app.appAndDependencies(),
+    app.styles(),
+    app.addonTree(),
+    addonTree,
+    addonTestSupportTree
+  ], { overwrite: true });
+
+  var headerFiles = importedJsFiles
+    .concat(app.legacyFilesToAppend || [])
+    .concat(['vendor/addons.js', 'vendor/addon-test-support.js']);
 
   var mergedTree = mergeTrees([
     concat(fullTree, {
@@ -125,7 +140,7 @@ module.exports = function() {
     }),
 
     concat(fullTree, {
-      headerFiles: importedJsFiles.concat(app.legacyFilesToAppend || []).concat(['vendor/addons.js']),
+      headerFiles: headerFiles,
       inputFiles: ['twiddle/**/*.js'],
       outputFile: '/addon.js',
       allowNone: true,
