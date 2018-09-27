@@ -5,6 +5,8 @@ var Funnel = require('broccoli-funnel');
 var concat = require('broccoli-concat');
 var path = require('path');
 var assetRev = require('broccoli-asset-rev');
+var stew = require('broccoli-stew');
+var DEBUG = false;
 
 EmberApp.env = function() { return 'development'; }
 
@@ -106,6 +108,7 @@ module.exports = function() {
   });
 
   var addonTestSupportTree = concat(app.addonTestSupportTree(), {
+    inputFiles: '**/*.js',
     outputFile: 'vendor/addon-test-support.js',
     allowNone: true
   });
@@ -116,40 +119,53 @@ module.exports = function() {
     app.getTests(),
     app.getExternalTree(),
     app.getSrc(),
-    app.getAppJavascript(),
+    app.getAppJavascript(false),
     addonTree,
     addonTestSupportTree
   ].filter(Boolean), { overwrite: true });
+
+  if (DEBUG) {
+    fullTree = stew.debug(fullTree, { name: 'fullTree' });
+  }
+
+  var processedTree = mergeTrees([
+    app._defaultPackager.processAppAndDependencies(fullTree),
+    app._defaultPackager.packageStyles(fullTree)
+  ]);
+
+  if (DEBUG) {
+    processedTree = stew.debug(processedTree, { name: 'processedTree' });
+  }
 
   var headerFiles = importedJsFiles
     .concat(app.legacyFilesToAppend || [])
     .concat(['vendor/addons.js', 'vendor/addon-test-support.js']);
 
-  var mergedTree = mergeTrees([
-    concat(fullTree, {
-      headerFiles: importedCssFiles,
-      inputFiles: ['**/*.css'],
-      outputFile: '/addon.css',
-      allowNone: false,
-      sourceMapConfig: { enabled: false },
-      annotation: 'Concat: Addon CSS'
-    }),
+  var cssTree = concat(processedTree, {
+    headerFiles: importedCssFiles,
+    inputFiles: ['**/*.css'],
+    outputFile: '/addon.css',
+    allowNone: false,
+    sourceMapConfig: { enabled: false },
+    annotation: 'Concat: Addon CSS'
+  });
 
-    new Funnel(app.getPublic(), {
-      srcDir:'assets',
-      destDir:'.',
-      allowEmpty:true
-    }),
+  var publicTree = new Funnel(app.getPublic(), {
+    srcDir:'assets',
+    destDir:'.',
+    allowEmpty:true
+  });
 
-    concat(fullTree, {
-      headerFiles: headerFiles,
-      inputFiles: ['twiddle/**/*.js'],
-      outputFile: '/addon.js',
-      allowNone: true,
-      sourceMapConfig: { enabled: false },
-      annotation: 'Concat: Addon JS'
-    })
-  ]);
+  var jsTree = concat(processedTree, {
+    headerFiles: headerFiles,
+    inputFiles: ['twiddle/**/*.js'],
+    outputFile: '/addon.js',
+    allowNone: true,
+    sourceMapConfig: { enabled: false },
+    annotation: 'Concat: Addon JS'
+  });
+
+  var mergedTree = mergeTrees([cssTree, publicTree, jsTree]);
 
   var fingerprintedTree = new assetRev(mergedTree, {
     generateAssetMap: true
