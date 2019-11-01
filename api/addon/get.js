@@ -1,5 +1,6 @@
 /*jshint node:true */
 var config = require('./config');
+var NPM_TOKEN = process.env['NPM_TOKEN'];
 
 var AWS = require('aws-sdk');
 var https = require('https');
@@ -37,7 +38,7 @@ function resolvePackage(addon, addonVersion, emberVersion) {
   return new Promise(function(resolve, reject) {
     console.log('Resolving addon in NPM');
     const host = 'registry.npmjs.com';
-    const path =  '/' + encodeURIComponent(addon) + '/' + encodeURIComponent(addonVersion);
+    const path =  '/' + encodeURIComponent(addon);
 
     emberVersion = resolveBuilderEmberVersion(emberVersion);
 
@@ -53,7 +54,10 @@ function resolvePackage(addon, addonVersion, emberVersion) {
         } catch(error) {
           reject(`Failed to parse json from ${host}${path}: Error: ${error}`);
         }
-        var npmData = JSON.parse(body);
+        if (!npmData.versions[addonVersion]) {
+          reject(Error('Not valid addon: ' + JSON.stringify(npmData)));
+        }
+        npmData = npmData.versions[addonVersion];
         if (isValidAddon(npmData)) {
           resolve({
             name: addon,
@@ -79,7 +83,7 @@ function resolvePackage(addon, addonVersion, emberVersion) {
  * @return {Boolean}         [description]
  */
 function isValidAddon(npmData) {
-  if(npmData.version) {
+  if(npmData && npmData.version) {
     if(npmData.keywords) {
       return (npmData.keywords.indexOf('ember-addon')!==-1);
     }
