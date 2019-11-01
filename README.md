@@ -19,7 +19,7 @@ Build a Docker container.
 For example, this will build a container named `twiddle-addon-builder` using Ember 2.9.0 that will deploy to the staging environment:
 
 ```
-docker build -t twiddle-addon-builder -f addon-builder/Dockerfile --build-arg EMBER_VERSION="2.9.0" --build-arg BUILDER_ENVIRONMENT="staging" .
+docker build -t twiddle-addon-builder -f addon-builder/Dockerfile --build-arg EMBER_VERSION="2.18.0" --build-arg BUILDER_ENVIRONMENT="staging" .
 ```
 
 Build your addon.

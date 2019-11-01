@@ -36,13 +36,12 @@ exports.handler = function getAddon(event, context) {
 function resolvePackage(addon, addonVersion, emberVersion) {
   return new Promise(function(resolve, reject) {
     console.log('Resolving addon in NPM');
+    const host = 'registry.npmjs.com';
+    const path =  '/' + encodeURIComponent(addon) + '/' + encodeURIComponent(addonVersion);
 
     emberVersion = resolveBuilderEmberVersion(emberVersion);
 
-    return https.get({
-      host: 'registry.npmjs.com',
-      path: '/' + addon + '/' + addonVersion
-    }, function(response) {
+    return https.get({ host, path }, function(response) {
       var body = '';
       response.on('data', function(d) {
         body += d;
@@ -52,7 +51,7 @@ function resolvePackage(addon, addonVersion, emberVersion) {
         try {
           npmData = JSON.parse(body);
         } catch(error) {
-          reject(`Failed to parse json from registry.npmjs.com/${addon}/${addonVersion}: Error: ${error}`);
+          reject(`Failed to parse json from ${host}${path}: Error: ${error}`);
         }
         var npmData = JSON.parse(body);
         if (isValidAddon(npmData)) {
