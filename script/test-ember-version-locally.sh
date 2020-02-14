@@ -14,5 +14,6 @@ npm install
 ember init --skip-npm --skip-bower --name twiddle
 bower install
 cp ../../addon-build-configs/$EMBER_VERSION/* .
-ember install $EMBER_ADDON_NAME@$EMBER_ADDON_VERSION
+npm install --save $EMBER_ADDON_NAME@$EMBER_ADDON_VERSION
+ember generate $EMBER_ADDON_NAME
 ember build
