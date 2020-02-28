@@ -9,11 +9,12 @@ mkdir -p ../tmp
 cd ../tmp
 mkdir -p $EMBER_VERSION
 cd $EMBER_VERSION
-cp ../../addon-build-configs/$EMBER_VERSION/* .
-npm install
+rm -rf *
+rm -rf .*
 ember init --skip-npm --skip-bower --name twiddle
+cp -rf ../../addon-build-configs/$EMBER_VERSION/* .
+npm install
 bower install
-cp ../../addon-build-configs/$EMBER_VERSION/* .
 npm install --save $EMBER_ADDON_NAME@$EMBER_ADDON_VERSION
 ember generate $EMBER_ADDON_NAME
 ember build

@@ -1,9 +1,10 @@
-FROM node:8-alpine
+FROM node:10-alpine
 
+RUN rm -rf /tmp/*
 RUN apk --update add git
 RUN npm install -g bower
 
-RUN mkdir /addon-builder
+RUN mkdir -p /addon-builder
 WORKDIR /addon-builder
 
 ARG EMBER_VERSION
@@ -22,6 +23,7 @@ RUN ember init --skip-npm --skip-bower --name twiddle
 COPY addon-build-configs/$EMBER_VERSION/bower.json /addon-builder/bower.json
 COPY addon-build-configs/$EMBER_VERSION/package.json /addon-builder/package.json
 COPY addon-build-configs/$EMBER_VERSION/ember-cli-build.js /addon-builder/ember-cli-build.js
+COPY addon-build-configs/$EMBER_VERSION/config/optional-features.json /addon-builder/config/optional-features.json
 
 COPY addon-builder/build-addon.sh /addon-builder/build-addon.sh
 COPY addon-builder/upload.js /addon-builder/upload.js
