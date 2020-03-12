@@ -77,6 +77,9 @@ class EmptyTree extends Plugin {
 
   build() {
     this.names.forEach(name => {
+      if (path.dirname(name)) {
+        this.output.mkdirSync(path.dirname(name), { recursive: true });
+      }
       this.output.writeFileSync(name, '');
     });
   }
@@ -145,19 +148,26 @@ module.exports = function() {
   }
 
   let processedTree = mergeTrees([
+    new EmptyTree(['assets/vendor.js', 'assets/test-support.js']),
     app._defaultPackager.processAppAndDependencies(fullTree),
     app._defaultPackager.packageStyles(fullTree)
-  ]);
+  ], { overwrite: true });
 
   if (DEBUG) {
     processedTree = stew.debug(processedTree, { name: 'processedTree' });
+  }
+
+  let postProcessedTree = app.addonPostprocessTree('all', processedTree);
+
+  if (DEBUG) {
+    postProcessedTree = stew.debug(postProcessedTree, { name: 'postProcessedTree' });
   }
 
   let headerFiles = importedJsFiles
     .concat(app.legacyFilesToAppend || [])
     .concat(['vendor/addons.js', 'vendor/addon-test-support.js']);
 
-  let cssTree = concat(processedTree, {
+  let cssTree = concat(postProcessedTree, {
     headerFiles: importedCssFiles,
     inputFiles: ['**/*.css'],
     outputFile: '/addon.css',
@@ -172,9 +182,9 @@ module.exports = function() {
     allowEmpty:true
   });
 
-  let jsTree = concat(processedTree, {
+  let jsTree = concat(postProcessedTree, {
     headerFiles: headerFiles,
-    inputFiles: ['twiddle/**/*.js'],
+    inputFiles: ['assets/vendor.js', 'assets/test-support.js', 'twiddle/**/*.js'],
     outputFile: '/addon.js',
     allowNone: true,
     sourceMapConfig: { enabled: false },
@@ -182,6 +192,10 @@ module.exports = function() {
   });
 
   let mergedTree = mergeTrees([cssTree, publicTree, jsTree]);
+
+  if (DEBUG) {
+    mergedTree = stew.debug(mergedTree, { name: 'mergedTree' });
+  }
 
   let fingerprintedTree = new assetRev(mergedTree, {
     generateAssetMap: true
