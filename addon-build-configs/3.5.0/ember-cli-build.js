@@ -1,13 +1,14 @@
 /* global require, module */
-var EmberApp = require('ember-cli/lib/broccoli/ember-app');
-var mergeTrees = require('ember-cli/lib/broccoli/merge-trees');
-var Funnel = require('broccoli-funnel');
-var concat = require('broccoli-concat');
-var writeFile = require('broccoli-file-creator');
-var path = require('path');
-var assetRev = require('broccoli-asset-rev');
-var stew = require('broccoli-stew');
-var DEBUG = false;
+const EmberApp = require('ember-cli/lib/broccoli/ember-app');
+const Plugin = require('broccoli-plugin');
+const mergeTrees = require('broccoli-merge-trees');
+const Funnel = require('broccoli-funnel');
+const concat = require('broccoli-concat');
+const writeFile = require('broccoli-file-creator');
+const path = require('path');
+const assetRev = require('broccoli-asset-rev');
+const stew = require('broccoli-stew');
+const DEBUG = false;
 
 EmberApp.env = function() { return 'development'; }
 
@@ -22,10 +23,10 @@ Reflect.setPrototypeOf(StubApp, EmberApp);
 // legacyFilesToAppend list.
 StubApp.prototype.populateLegacyFiles = function() {};
 
-var importedJsFiles = [];
-var importedCssFiles = [];
+let importedJsFiles = [];
+let importedCssFiles = [];
 
-var filesToExclude = [
+let filesToExclude = [
   'loader.js',
   'legacy-shims.js',
   'app-shims.js',
@@ -47,9 +48,9 @@ StubApp.prototype.import = function(assetPath, options) {
       console.log(assetPath);
     }
 
-    var ext = path.extname(assetPath);
-    var isCss = ext === '.css';
-    var isJs = ext === '.js';
+    let ext = path.extname(assetPath);
+    let isCss = ext === '.css';
+    let isJs = ext === '.js';
     if (isCss) {
       if (options.prepend) {
         importedCssFiles.unshift(assetPath);
@@ -68,30 +69,25 @@ StubApp.prototype.import = function(assetPath, options) {
   EmberApp.prototype.import.call(this, assetPath, options);
 };
 
-var quickTemp = require('quick-temp');
-var fs = require('fs');
-
-function EmptyTree(names) {
-  this.names = names || [];
-}
-
-EmptyTree.prototype.read = function() {
-  var dir = quickTemp.makeOrReuse(this, 'emptyTree');
-  this.names.forEach(function(name) {
-    fs.writeFileSync(path.join(dir, name), '');
-  });
-  return dir;
-};
-
-EmptyTree.prototype.cleanup = function() {
-  if (!DEBUG) {
-    quickTemp.remove(this, 'tmpCacheDir');
+class EmptyTree extends Plugin {
+  constructor(names = []) {
+    super([], {});
+    this.names = names;
   }
-};
+
+  build() {
+    this.names.forEach(name => {
+      if (path.dirname(name)) {
+        this.output.mkdirSync(path.dirname(name), { recursive: true });
+      }
+      this.output.writeFileSync(name, '');
+    });
+  }
+}
 
 
 module.exports = function() {
-  var app = new StubApp({
+  let app = new StubApp({
     name: 'twiddle',
     sourcemaps: {
       enabled: false
@@ -110,7 +106,7 @@ module.exports = function() {
     }
   });
 
-  var origAddonTree = new Funnel(app.addonTree(), {
+  let origAddonTree = new Funnel(app.addonTree(), {
     exclude: ['*/ember-load-initializers/**/*.js', '*/ember-resolver/**/*.js']
   });
 
@@ -118,18 +114,18 @@ module.exports = function() {
     origAddonTree = stew.debug(origAddonTree, { name: 'origAddonTree' });
   }
 
-  var addonTree = concat(mergeTrees([origAddonTree, app.addonSrcTree()]), {
+  let addonTree = concat(mergeTrees([origAddonTree, app.addonSrcTree()]), {
     inputFiles: '**/*.js',
     outputFile: 'vendor/addons.js'
   });
 
-  var addonTestSupportTree = concat(app.addonTestSupportTree(), {
+  let addonTestSupportTree = concat(app.addonTestSupportTree(), {
     inputFiles: '**/*.js',
     outputFile: 'vendor/addon-test-support.js',
     allowNone: true
   });
 
-  var fullTree = mergeTrees([
+  let fullTree = mergeTrees([
     app.getAddonTemplates(),
     app.getStyles(),
     app.getTests(),
@@ -144,27 +140,34 @@ module.exports = function() {
     exclude: ['*/ember-load-initializers/**/*.js', '*/ember-resolver/**/*.js']
   });
 
-  var templates = writeFile('twiddle/templates/.gitkeep', '');
+  let templates = writeFile('twiddle/templates/.gitkeep', '');
   fullTree = mergeTrees([fullTree, templates]);
 
   if (DEBUG) {
     fullTree = stew.debug(fullTree, { name: 'fullTree' });
   }
 
-  var processedTree = mergeTrees([
+  let processedTree = mergeTrees([
+    new EmptyTree(['assets/vendor.js', 'assets/test-support.js']),
     app._defaultPackager.processAppAndDependencies(fullTree),
     app._defaultPackager.packageStyles(fullTree)
-  ]);
+  ], { overwrite: true });
 
   if (DEBUG) {
     processedTree = stew.debug(processedTree, { name: 'processedTree' });
   }
 
-  var headerFiles = importedJsFiles
+  let postProcessedTree = app.addonPostprocessTree('all', processedTree);
+
+  if (DEBUG) {
+    postProcessedTree = stew.debug(postProcessedTree, { name: 'postProcessedTree' });
+  }
+
+  let headerFiles = importedJsFiles
     .concat(app.legacyFilesToAppend || [])
     .concat(['vendor/addons.js', 'vendor/addon-test-support.js']);
 
-  var cssTree = concat(processedTree, {
+  let cssTree = concat(postProcessedTree, {
     headerFiles: importedCssFiles,
     inputFiles: ['**/*.css'],
     outputFile: '/addon.css',
@@ -173,24 +176,28 @@ module.exports = function() {
     annotation: 'Concat: Addon CSS'
   });
 
-  var publicTree = new Funnel(app.getPublic(), {
+  let publicTree = new Funnel(app.getPublic(), {
     srcDir:'assets',
     destDir:'.',
     allowEmpty:true
   });
 
-  var jsTree = concat(processedTree, {
+  let jsTree = concat(postProcessedTree, {
     headerFiles: headerFiles,
-    inputFiles: ['twiddle/**/*.js'],
+    inputFiles: ['assets/vendor.js', 'assets/test-support.js', 'twiddle/**/*.js'],
     outputFile: '/addon.js',
     allowNone: true,
     sourceMapConfig: { enabled: false },
     annotation: 'Concat: Addon JS'
   });
 
-  var mergedTree = mergeTrees([cssTree, publicTree, jsTree]);
+  let mergedTree = mergeTrees([cssTree, publicTree, jsTree]);
 
-  var fingerprintedTree = new assetRev(mergedTree, {
+  if (DEBUG) {
+    mergedTree = stew.debug(mergedTree, { name: 'mergedTree' });
+  }
+
+  let fingerprintedTree = new assetRev(mergedTree, {
     generateAssetMap: true
   });
 
